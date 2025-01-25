@@ -23,6 +23,10 @@ Route::middleware([
     })->name('dashboard');
 });
 
+//404 page
+Route::fallback(function () {
+    return Inertia::render('Errors/404');
+});
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/chat-rooms', [ChatRoomController::class, 'index'])->name('chat.rooms');
