@@ -25,7 +25,7 @@ Route::middleware([
 
 //404 page
 Route::fallback(function () {
-    return Inertia::render('Errors/404');
+    return Inertia::render('Errors/404',['title' => '404 - Page Not Found']);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {

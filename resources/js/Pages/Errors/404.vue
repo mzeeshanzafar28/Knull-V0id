@@ -1,47 +1,23 @@
-<template #404>
-    <!-- <AppLayout title="404"> -->
-    <div class="wrapper">
-      <div id="sky">
-        <div id="moon"></div>
-        <div id="stars"></div>
-        <div id="clouds"></div>
-      </div>
-  
-      <div id="middle-content">
-        <div id="spaceship" class="swing">
-          <div id="light"></div>
-        </div>
-        <div class="err-text swing-text">
-          <h1>ERROR 404</h1>
-          <p>Sorry, the page you're looking for could not be found.</p>
-          <p onclick="window.history.go(-1)">Go Back</p>
-        </div>
-      </div>
-  
-      <div id="ground">
-        <div id="mountain1"></div>
-        <div id="mountain2"></div>
-        <div id="mountain3"></div>
-      </div>
-    </div>
-<!-- </AppLayout> -->
-  </template>
-  
 <script>
-import AppLayout from '@/Layouts/AppLayout.vue';
+// import AppLayout from '@/Layouts/AppLayout.vue';
 import jQuery from "jquery";
 import $ from "jquery";
 import"@/../css/style.css";
 import"@/plax.js"; 
 import"@/jquery.spritely-0.6.1.js"; 
 import"@/jquery-animate-css-rotate-scale.js"; 
+import { Head } from '@inertiajs/vue3';
+
+
+document.title = "404 - Page Not Found";
+
+
 
 export default {
+  // layout: AppLayout,
   name: "NotFoundPage",
   async mounted() {
     try {
-        
-        
 function swingText() {
 
 if (!$('.swing-text').hasClass('down')) {
@@ -119,8 +95,6 @@ setTimeout(function () {
 });
 
 
-
-
 $('#clouds').pan({
 fps: 25,
 speed: 0.8,
@@ -133,10 +107,6 @@ speed: 0.2,
 dir: 'left',
 depth: 400
 });
-
-
-
-
 
 $('#mountain1').plaxify({
 "xRange": 3,
@@ -163,6 +133,49 @@ $('#middle-content').height($(window).height());
   },
 };
 </script>
+
+
+<template #404>
+    <Head title="404 - Page Not Found" />
+
+
+<!-- <AppLayout title="404"> -->
+
+
+      
+      <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900">
+          <div class="wrapper">
+              <div id="sky">
+                  <div id="moon"></div>
+                  <div id="stars"></div>
+                  <div id="clouds"></div>
+              </div>
+              
+              <div id="middle-content" class="text-center">
+                  <div id="spaceship" class="swing">
+                      <div id="light"></div>
+                  </div>
+                  <div class="err-text swing-text" style="margin-bottom: 49px;">
+                      <h1 class="text-4xl font-bold text-gray-800 dark:text-gray-100">ERROR 404</h1>
+                      <p class="text-lg text-gray-600 dark:text-gray-300">Sorry, the page you're looking for could not be found.</p>
+                      <button onclick="window.history.back()" 
+                              class="mt-4 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                          Go Back
+                      </button>
+                  </div>
+              </div>
+              
+              <div id="ground">
+                  <div id="mountain1"></div>
+                  <div id="mountain2"></div>
+                  <div id="mountain3"></div>
+              </div>
+          </div>
+      </div>
+  <!-- </AppLayout> -->
+</template>
+
+
 
   
   
