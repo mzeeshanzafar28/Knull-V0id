@@ -29,7 +29,9 @@ Route::fallback(function () {
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/chat-rooms', [ChatRoomController::class, 'index'])->name('chat.rooms');
+    Route::get('/chat-rooms', function () {
+        return Inertia::render('/ChatRoom/index');
+    })->name('dashboard');
     Route::post('/chat-rooms', [ChatRoomController::class, 'create']);
     Route::get('/chat-rooms/{id}', [ChatRoomController::class, 'show']);
     Route::post('/chat-rooms/{id}/messages', [ChatRoomController::class, 'sendMessage']);
