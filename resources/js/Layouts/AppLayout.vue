@@ -161,23 +161,23 @@ const logout = () => {
                                                 :href="route('profile.show')"
                                                 class="hover:bg-blood-red/10 text-ghost-white font-im-fell"
                                             >
-                                                Mortal Vessel
+                                                Profile
                                             </DropdownLink>
 
-                                            <DropdownLink 
+                                            <!-- <DropdownLink 
                                                 v-if="$page.props.jetstream.hasApiFeatures" 
                                                 :href="route('api-tokens.index')"
                                                 class="hover:bg-blood-red/10 text-ghost-white font-im-fell"
                                             >
                                                 Shadow Tokens
-                                            </DropdownLink>
+                                            </DropdownLink> -->
 
                                             <div class="border-t border-blood-red/30" />
 
                                             <!-- Authentication -->
                                             <form @submit.prevent="logout">
                                                 <DropdownLink as="button" class="hover:bg-blood-red/10 text-ghost-white font-im-fell">
-                                                    Return to Dust
+                                                    Logout
                                                 </DropdownLink>
                                             </form>
                                         </div>
@@ -335,7 +335,7 @@ const logout = () => {
             </header>
 
             <!-- Page Content -->
-            <main class="relative z-10">
+            <main class="relative z-10" style="margin-top: 19px;">
                 <slot />
             </main>
         </div>
