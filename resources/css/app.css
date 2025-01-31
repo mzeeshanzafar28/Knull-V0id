@@ -1,9 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=IM+Fell+English+SC&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=IM+Fell+English+SC&display=swap');
+@import 'animate.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=IM+Fell+English+SC&display=swap');
 
 [x-cloak] {
     display: none;
