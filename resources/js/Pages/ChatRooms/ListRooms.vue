@@ -2,6 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
+import { Inertia } from '@inertiajs/inertia';
+
 
 const rooms = ref([]);
 const loading = ref(true);
@@ -34,11 +36,9 @@ async function joinRoom(roomId) {
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
 
-        const response = await axios.post(`/chat/${roomId}/join`, {
-            timeHash: hashHex
-        });
 
-        window.location.href = `/chat/${roomId}`;
+        Inertia.get(`/chat/${roomId}/join`, { picabo: hashHex });
+
     } catch (error) {
         console.error('The void rejected your entry:', error);
     }

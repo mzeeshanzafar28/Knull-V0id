@@ -37,7 +37,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return Inertia::render('ChatRooms/ListRooms');
     })->name('listrooms');
     Route::post('/chat-rooms', [ChatController::class, 'listRooms']); //return all chatrooms
-    Route::post('/chat/{roomId}/join', [ChatController::class, 'joinRoom']);
+    Route::get('/chat/{roomId}/join', [ChatController::class, 'joinRoom']);
     Route::post('/chat/{roomId}/send', [ChatController::class, 'sendMessage']);
     
     // File Transfer Routes

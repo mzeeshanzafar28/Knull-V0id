@@ -6,6 +6,8 @@ use App\Events\NewChatMessage;
 use App\Models\ChatRoom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Inertia\Inertia;
+
 
 class ChatController extends Controller
 {
@@ -29,25 +31,25 @@ class ChatController extends Controller
 
     public function joinRoom(Request $request, $roomId)
     {
-        $request->validate([
-            'timeHash' => 'required|string|size:64' 
-        ]);
+        // $request->validate([
+        //     'timeHash' => 'required|string|size:64' 
+        // ]);
 
-        $now = now();
-        $currentTime = $now->format('H-i');
-        $previousTime = $now->subMinute()->format('H-i');
+        // $now = now();
+        // $currentTime = $now->format('H-i');
+        // $previousTime = $now->subMinute()->format('H-i');
 
-        $currentHash = hash('sha256', $currentTime);
-        $previousHash = hash('sha256', $previousTime);
+        // $currentHash = hash('sha256', $currentTime);
+        // $previousHash = hash('sha256', $previousTime);
 
-        if ($request->timeHash !== $currentHash && $request->timeHash !== $previousHash) {
-            return response()->json([
-                'error' => 'Invalid Request. Access denied.'
-            ], 403);
-        }
+        // if ($request->timeHash !== $currentHash && $request->timeHash !== $previousHash) {
+        //     return response()->json([
+        //         'error' => 'Invalid Request. Access denied.'
+        //     ], 403);
+        // }
 
         $room = ChatRoom::findOrFail($roomId);
-
+        
         return Inertia::render('ChatRooms/Room', [
             'roomId' => $roomId,
             'room' => $room
