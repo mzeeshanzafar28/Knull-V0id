@@ -19,7 +19,7 @@ class ChatController extends Controller
                 'description' => $room->description,
                 'max_members' => $room->max_members,
                 'is_ephemeral' => $room->is_ephemeral,
-                'destruction_time' => $room->destruction_time,
+                'self_destruct_hours' => $room->self_destruct_hours,
                 'created_at' => $room->created_at->diffForHumans()
             ];
         });
@@ -29,14 +29,28 @@ class ChatController extends Controller
 
     public function joinRoom(Request $request, $roomId)
     {
+        $request->validate([
+            'timeHash' => 'required|string|size:64' 
+        ]);
+
+        $now = now();
+        $currentTime = $now->format('H-i');
+        $previousTime = $now->subMinute()->format('H-i');
+
+        $currentHash = hash('sha256', $currentTime);
+        $previousHash = hash('sha256', $previousTime);
+
+        if ($request->timeHash !== $currentHash && $request->timeHash !== $previousHash) {
+            return response()->json([
+                'error' => 'Invalid Request. Access denied.'
+            ], 403);
+        }
+
         $room = ChatRoom::findOrFail($roomId);
-        
-        // Implement quantum-safe key exchange here
-        $sharedSecret = $this->initiateQuantumKeyExchange($request->user());
-        
-        return response()->json([
-            'room' => $room,
-            'ephemeral_key' => Crypt::encrypt($sharedSecret)
+
+        return Inertia::render('ChatRooms/Room', [
+            'roomId' => $roomId,
+            'room' => $room
         ]);
     }
 

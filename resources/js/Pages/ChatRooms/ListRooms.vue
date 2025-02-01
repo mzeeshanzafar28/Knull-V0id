@@ -9,6 +9,7 @@ const loading = ref(true);
 const zodRoom = computed(() => rooms.value.find(r => r.name === 'The crown of Zod'));
 const otherRooms = computed(() => rooms.value.filter(r => r.name !== 'The crown of Zod'));
 
+
 onMounted(async () => {
     try {
         const response = await axios.post('/chat-rooms');
@@ -22,8 +23,22 @@ onMounted(async () => {
 
 async function joinRoom(roomId) {
     try {
-        const response = await axios.post(`/chat/${roomId}/join`);
-        window.location.href = `/chat/${roomId}?key=${encodeURIComponent(response.data.ephemeral_key)}`;
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const timeString = `${hours}-${minutes}`;
+
+        const encoder = new TextEncoder();
+        const data = encoder.encode(timeString);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+        const response = await axios.post(`/chat/${roomId}/join`, {
+            timeHash: hashHex
+        });
+
+        window.location.href = `/chat/${roomId}`;
     } catch (error) {
         console.error('The void rejected your entry:', error);
     }
@@ -77,7 +92,7 @@ async function joinRoom(roomId) {
                             
                             <div class="flex justify-between items-center text-ghost-white font-im-fell text-sm">
                                 <span>🔥 Only {{ zodRoom.max_members }} Chosen One</span>
-                                <span>⌛ Vanishes in {{ zodRoom.self_destruct_after }}</span>
+                                <span>⌛ Vanishes in {{ zodRoom.self_destruct_hours }} hours</span>
                             </div>
 
                             <button 
@@ -106,7 +121,7 @@ async function joinRoom(roomId) {
                             
                             <div class="flex justify-between items-center text-ghost-white font-im-fell text-sm">
                                 <span>🕳️ {{ room.max_members }} Souls</span>
-                                <span v-if="room.is_ephemeral">⏳ Vanishes in {{ room.self_destruct_after }}</span>
+                                <span v-if="room.is_ephemeral">⏳ Vanishes in {{ room.self_destruct_hours }} hours</span>
                             </div>
 
                             <button 
