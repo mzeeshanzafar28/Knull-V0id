@@ -5,6 +5,10 @@ const soundFiles = {
     help: '/sounds/help-74926.mp3',
     door_creak: '/sounds/door-creak.mp3',
     door_open: '/sounds/door-open.mp3',
+    upload: '/sounds/upload.mp3',
+    download: '/sounds/download.mp3',
+
+
 };
 
 export async function playSound(type) {

@@ -36,23 +36,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/chat-rooms', function () {
         return Inertia::render('ChatRooms/ListRooms');
     })->name('listrooms');
-    Route::post('/chat-rooms', [ChatController::class, 'listRooms']); //return all chatrooms
+    Route::post('/chat-rooms', [ChatController::class, 'listRooms']); 
     Route::get('/chat/{roomId}/join', [ChatController::class, 'joinRoom']);
     Route::post('/chat/{roomId}/send', [ChatController::class, 'sendMessage']);
     
     // File Transfer Routes
     Route::get('/files', function () {
         return Inertia::render('Files/FilesSection');
-    })->name('filessection');
+    })->name('filesSection');
     Route::get('/files/upload', function () {
         return Inertia::render('Files/FilesUpload');
-    })->name('filesupload');
+    })->name('filesUpload');
     Route::get('/files/download', function () {
         return Inertia::render('Files/FilesDownload');
-    })->name('filesdownload');
+    })->name('filesDownload');
+    Route::post('/files/mine', [FileController::class, 'userFiles']);
     Route::post('/files/upload', [FileController::class, 'upload']);
     Route::post('/files/download', [FileController::class, 'download']);
-    
+    Route::post('/files/delete/{file}', [FileController::class, 'delete']);
 
 
 });
