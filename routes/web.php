@@ -50,8 +50,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/files/download', function () {
         return Inertia::render('Files/FilesDownload');
     })->name('filesdownload');
-    Route::post('/files/upload', [ChatController::class, 'upload']);
-    Route::post('/files/download', [ChatController::class, 'download']);
+    Route::post('/files/upload', [FileController::class, 'upload']);
+    Route::post('/files/download', [FileController::class, 'download']);
     
 
 
