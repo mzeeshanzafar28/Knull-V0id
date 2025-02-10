@@ -34,7 +34,7 @@ function handleImageError() {
 <template>
 
     <Head title="Welcome" />
-    <div class="bg-void-black min-h-screen relative overflow-hidden">
+    <div class="min-h-screen relative overflow-hidden">
         <!-- Top Right Button -->
         <header class="absolute top-0 right-0 z-50 p-6 text-red-600">
             <nav v-if="canLogin" class="flex justify-end">

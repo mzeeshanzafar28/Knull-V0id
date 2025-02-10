@@ -29,6 +29,11 @@ const handleUpload = async (event) => {
 
     if (!file) return;
 
+    if (file.size > 100 * 1024 * 1024) {
+        alert("Void Rejected your File: Size too large for initial void prototype.");
+        return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
@@ -69,6 +74,14 @@ const handleDownload = async (fileId) => {
         console.error('Download failed:', error);
         alert('No file found in the abyss with this ID');
     }
+};
+
+const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('File ID copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+    });
 };
 
 const triggerFileInput = () => {
@@ -114,13 +127,18 @@ onMounted(fetchFiles);
                                 <tr v-for="file in files" :key="file.id"
                                     class="border-t border-blood-red/10 hover:bg-black/20 transition-colors">
                                     <td class="p-4 font-im-fell text-ghost-white">{{ file.original_name }}</td>
-                                    <td class="p-4 text-center font-mono text-ghost-white">{{ file.file_id }}</td>
+                                    <td class="p-4 text-center font-mono text-ghost-white">
+                                        {{ file.file_id }}
+                                        <button @click="copyToClipboard(file.file_id)" class="ml-2 text-white bg-gray-700 px-2 py-1 rounded-md hover:bg-gray-600">
+                                            📋
+                                        </button>
+                                    </td>
                                     <td class="p-4 text-center space-x-2">
-                                        <button @click="handleDownload(file.file_id)" class="m-3 px-3 py-1 bg-blue-500 hover:bg-blue-700 border border-blue-700 
+                                        <button @click="handleDownload(file.file_id)" class="px-3 py-1 bg-blue-500 hover:bg-blue-700 border border-blue-700 
                                                    text-white rounded-lg transition-colors">
                                             Download
                                         </button>
-                                        <button @click="deleteFile(file.id)" class="px-3 py-1 bg-red-500 hover:bg-red-700 border border-red 
+                                        <button @click="deleteFile(file.id)" class="px-3 py-1 bg-blood-red/20 hover:bg-blood-red/40 border border-blood-red 
                                                    text-ghost-white rounded-lg transition-colors">
                                             Erase
                                         </button>

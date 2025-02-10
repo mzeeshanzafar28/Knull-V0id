@@ -31,30 +31,26 @@ class ChatController extends Controller
 
     public function joinRoom(Request $request, $roomId)
     {
-        // $request->validate([
-        //     'timeHash' => 'required|string|size:64' 
-        // ]);
-
-        // $now = now();
-        // $currentTime = $now->format('H-i');
-        // $previousTime = $now->subMinute()->format('H-i');
-
-        // $currentHash = hash('sha256', $currentTime);
-        // $previousHash = hash('sha256', $previousTime);
-
-        // if ($request->timeHash !== $currentHash && $request->timeHash !== $previousHash) {
-        //     return response()->json([
-        //         'error' => 'Invalid Request. Access denied.'
-        //     ], 403);
-        // }
-
         $room = ChatRoom::findOrFail($roomId);
-        
+
+        // Count active users in the room
+        $activeUsers = cache()->get("chat_room_users_{$roomId}", []);
+        if (count($activeUsers) >= $room->max_members) {
+            return redirect()->route('listrooms')->with('error', 'Room is full.');
+        }
+
+        // Store user in active users cache
+        $userId = auth()->id();
+        $activeUsers[$userId] = ['id' => $userId, 'name' => auth()->user()->anonymous_alias];
+        cache()->put("chat_room_users_{$roomId}", $activeUsers, now()->addMinutes(10));
+
         return Inertia::render('ChatRooms/Room', [
             'roomId' => $roomId,
-            'room' => $room
+            'room' => $room,
+            'members' => array_values($activeUsers),
         ]);
     }
+
 
     public function sendMessage(Request $request, $roomId)
     {
@@ -63,7 +59,16 @@ class ChatController extends Controller
             'iv' => 'required|string'
         ]);
 
-        // Store encrypted message in DB or ephemeral storage
+        $room = ChatRoom::findOrFail($roomId);
+
+        // Store in database
+        $message = $room->messages()->create([
+            'user_id' => $request->user()->id,
+            'encrypted_message' => $validated['encrypted_message'],
+            'iv' => $validated['iv']
+        ]);
+
+        // Broadcast the message
         event(new NewChatMessage(
             $roomId,
             $validated['encrypted_message'],
@@ -72,6 +77,9 @@ class ChatController extends Controller
 
         return response()->json(['status' => 'Message dispatched to void']);
     }
+
+
+
 
     private function initiateQuantumKeyExchange($user)
     {
