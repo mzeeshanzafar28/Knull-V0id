@@ -4,6 +4,7 @@ import { ref, onMounted } from 'vue';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 import axios from 'axios';
+import AppLayout from '@/Layouts/AppLayout.vue';
 
 const { props } = usePage();
 const room = ref(props.room);
@@ -16,13 +17,13 @@ const error = ref(null);
 // Initialize Laravel Echo using Reverb environment variables
 window.Echo = new Echo({
     broadcaster: 'pusher',
-    key: import.meta.env.VITE_REVERB_APP_KEY || 'default_key', // fallback key if not defined
+    key: import.meta.env.VITE_REVERB_APP_KEY || 'default_key', // using Reverb key
+    cluster: '', // Provide an empty cluster to satisfy pusher-js requirements
     wsHost: import.meta.env.VITE_REVERB_HOST || 'localhost',
     wsPort: import.meta.env.VITE_REVERB_PORT || 8080,
     forceTLS: false,
     disableStats: true,
 });
-
 
 // Function to send a message
 const sendMessage = async () => {
@@ -54,13 +55,15 @@ onMounted(() => {
 });
 </script>
 
+
 <template>
+    <AppLayout>
     <Head :title="`Chat Room - ${room.name}`" />
     <div class="min-h-screen bg-black text-white p-4">
         <h1 class="text-2xl font-bold">{{ room.name }}</h1>
         <p class="text-gray-400">{{ room.description }}</p>
         <p>Members: {{ members.length }} / {{ room.max_members }}</p>
-        
+
         <!-- Chat Messages -->
         <div class="chat-box border p-4 h-80 overflow-y-auto my-4">
             <div v-for="(message, index) in messages" :key="index" class="mb-2">
@@ -80,4 +83,5 @@ onMounted(() => {
             <button @click="sendMessage" class="bg-blue-500 px-4 py-2">Send</button>
         </div>
     </div>
+</AppLayout>
 </template>

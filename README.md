@@ -1,35 +1,57 @@
-# Knull-Void
+# Knull-Void 😈
 
-The Hell for Quantum Computers
+**The Hell for Quantum Computers**
 
-## Soldiers
+---
 
-What's the hell made of? Gotcha: 
+## 🛡️ Soldiers
 
-```bash
-Lord Laravel 👑
-Master Vue 🥷
-Uncle Tailwind 🥸
-Donnie Reverb 😎
-```
+*What's the hell made of? Gotcha:*
 
-## What's in?
+- **Lord Laravel** 👑  
+- **Master Vue** 🥷  
+- **Uncle Tailwind** 🥸  
+- **Donnie Reverb** 😎
+- **Sister Python** 👯
 
-```bash
-Anonymous ChatRooms
-Secure File Transfers
-Post Quantum Encryption
-Self Destructing Message
-WebSockets Implementation
-Python Microservices Implemented
-```
+---
 
-## Contributing
+## 🔥 What's in?
 
-Pull requests are welcome. For major changes, please open an issue first
-to discuss what you would like to change.
+- **Anonymous ChatRooms**  
+- **Secure File Transfers**  
+- **Post Quantum Encryption**  
+- **Self Destructing Messages**  
+- **WebSockets Implementation**  
+- **Python Microservices**
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
-## License
+---
 
+## 📜 License
+
+*MIT License*
+
+---
+
+## 🚀 How to Run
+
+1. **Clone the repository**
+2. Run `composer install`
+3. Run `npm install`
+4. Set up your database and update your `.env` file
+5. Run `php artisan migrate`
+6. Run `php artisan serve`
+7. Run `npm run dev`
+8. Run `php artisan reverb:start`
+9. Run `pip install -r requirements.txt`
+10. Run `python encryption_service.py`
+
+---
