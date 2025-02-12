@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -22,7 +23,8 @@ class NewChatMessage implements ShouldBroadcast {
     }
 
     public function broadcastOn() {
-        return new Channel( 'chat.' . $this->roomId );
+        // return new Channel( 'chat.' . $this->roomId );
+        return new PrivateChannel( 'chat.'.$this->roomId );
     }
 
     public function broadcastWith() {
@@ -31,5 +33,9 @@ class NewChatMessage implements ShouldBroadcast {
             'sender'    => $this->sender,
             'timestamp' => now()->toISOString()
         ];
+    }
+
+    public function broadcastAs() {
+        return 'NewChatMessage';
     }
 }

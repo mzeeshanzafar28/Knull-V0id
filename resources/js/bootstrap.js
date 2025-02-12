@@ -13,13 +13,3 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
  */
 
 import './echo';
-
-// window.Echo = new Echo({
-//     broadcaster: 'pusher',
-//     key: null, // Laravel Reverb does not require a key
-//     wsHost: window.location.hostname,
-//     wsPort: 6001,
-//     forceTLS: false,
-//     disableStats: true,
-//     encrypted: false,
-// });

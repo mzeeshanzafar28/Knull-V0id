@@ -11,17 +11,22 @@ def encrypt_message(message):
     cipher = AES.new(SECRET_KEY, AES.MODE_EAX)
     nonce = cipher.nonce
     ciphertext, tag = cipher.encrypt_and_digest(message.encode('utf-8'))
+    # Return the concatenation of nonce + ciphertext, plus the nonce separately
     return base64.b64encode(nonce + ciphertext).decode('utf-8'), base64.b64encode(nonce).decode('utf-8')
 
 def decrypt_message(encrypted_message, iv):
     try:
         nonce = base64.b64decode(iv)
         encrypted_data = base64.b64decode(encrypted_message)
+        # Remove the nonce (first len(nonce) bytes) from the encrypted data
+        ciphertext = encrypted_data[len(nonce):]
         cipher = AES.new(SECRET_KEY, AES.MODE_EAX, nonce=nonce)
-        decrypted_message = cipher.decrypt(encrypted_data).decode('utf-8')
+        decrypted_message = cipher.decrypt(ciphertext).decode('utf-8')
         return decrypted_message
     except Exception as e:
-        return f"Decryption failed: {str(e)}"
+        #return f"Decryption failed: {str(e)}"
+        return f"Dust Cleared by Void"
+
 
 @app.route('/encrypt', methods=['POST'])
 def encrypt():
@@ -29,8 +34,8 @@ def encrypt():
     message = data.get("message")
     if not message:
         return jsonify({"error": "No message provided"}), 400
-    encrypted, iv = encrypt_message(message)
-    return jsonify({"encrypted_message": encrypted, "iv": iv})
+    encrypted_message, iv = encrypt_message(message)
+    return jsonify({"encrypted_message": encrypted_message, "iv": iv})
 
 @app.route('/decrypt', methods=['POST'])
 def decrypt():
