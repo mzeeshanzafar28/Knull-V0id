@@ -4,14 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Events\NewChatMessage;
 use App\Models\ChatRoom;
+use App\Models\ChatMessage;  // Make sure you have created this model
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
-
 
 class ChatController extends Controller
 {
-
     public function listRooms(Request $request)
     {
         $rooms = ChatRoom::all()->map(function ($room) {
@@ -33,58 +32,56 @@ class ChatController extends Controller
     {
         $room = ChatRoom::findOrFail($roomId);
 
-        // Count active users in the room
+        // Count active users in the room (using cache)
         $activeUsers = cache()->get("chat_room_users_{$roomId}", []);
         if (count($activeUsers) >= $room->max_members) {
             return redirect()->route('listrooms')->with('error', 'Room is full.');
         }
 
-        // Store user in active users cache
+        // Add current user to active users
         $userId = auth()->id();
         $activeUsers[$userId] = ['id' => $userId, 'name' => auth()->user()->anonymous_alias];
         cache()->put("chat_room_users_{$roomId}", $activeUsers, now()->addMinutes(10));
 
         return Inertia::render('ChatRooms/Room', [
-            'roomId' => $roomId,
-            'room' => $room,
+            'roomId'  => $roomId,
+            'room'    => $room,
             'members' => array_values($activeUsers),
         ]);
     }
 
-
     public function sendMessage(Request $request, $roomId)
     {
         $validated = $request->validate([
-            'encrypted_message' => 'required|string',
-            'iv' => 'required|string'
+            'message' => 'required|string'
         ]);
 
         $room = ChatRoom::findOrFail($roomId);
 
-        // Store in database
-        $message = $room->messages()->create([
-            'user_id' => $request->user()->id,
-            'encrypted_message' => $validated['encrypted_message'],
-            'iv' => $validated['iv']
+        // Encrypt message via Python microservice
+        $encryptionResponse = Http::post('http://127.0.0.1:5000/encrypt', [
+            'message' => $validated['message']
         ]);
 
-        // Broadcast the message
-        event(new NewChatMessage(
-            $roomId,
-            $validated['encrypted_message'],
-            $request->user()->anonymous_alias
-        ));
+        if ($encryptionResponse->failed()) {
+            return response()->json(['error' => 'Encryption failed'], 500);
+        }
 
-        return response()->json(['status' => 'Message dispatched to void']);
-    }
+        $encryptedData = $encryptionResponse->json();
+        $encryptedMessage = $encryptedData['encrypted_message'];
+        $iv = $encryptedData['iv'];
 
+        // Store encrypted message in the database
+        $message = ChatMessage::create([
+            'chat_room_id'    => $roomId,
+            'user_id'         => auth()->id(),
+            'encrypted_message'=> $encryptedMessage,
+            'iv'              => $iv
+        ]);
 
+        // Broadcast the encrypted message to the room
+        event(new NewChatMessage($roomId, $encryptedMessage, auth()->user()->anonymous_alias));
 
-
-    private function initiateQuantumKeyExchange($user)
-    {
-        // Integrate with Python microservice for Kyber
-        // This would make an API call to your Python service
-        return 'KYBER_SHARED_SECRET'; // Placeholder
+        return response()->json(['status' => 'Message sent']);
     }
 }

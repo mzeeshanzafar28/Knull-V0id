@@ -4,8 +4,6 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -15,26 +13,22 @@ class NewChatMessage implements ShouldBroadcast {
 
     public $roomId;
     public $encryptedMessage;
-    public $senderId;
+    public $sender;
 
-    /**
-    * Create a new event instance.
-    */
-
-    public function __construct( $roomId, $encryptedMessage, $senderId ) {
+    public function __construct( $roomId, $encryptedMessage, $sender ) {
         $this->roomId = $roomId;
         $this->encryptedMessage = $encryptedMessage;
-        $this->senderId = $senderId;
+        $this->sender = $sender;
     }
 
     public function broadcastOn() {
-        return new Channel( 'chat.'.$this->roomId );
+        return new Channel( 'chat.' . $this->roomId );
     }
 
     public function broadcastWith() {
         return [
-            'message' => $this->encryptedMessage,
-            'sender' => $this->senderId,
+            'message'   => $this->encryptedMessage,
+            'sender'    => $this->sender,
             'timestamp' => now()->toISOString()
         ];
     }
