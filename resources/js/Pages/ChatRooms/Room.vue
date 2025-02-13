@@ -1,14 +1,4 @@
 <script setup>
-/*todo:
- - implement reverb web sockets for live chat
- - count how many users are in room, increment|decrement the count when user joins|leaves
- - fail the joining of new member if max_members have joined
- - assign different color bubbles to members, attach member name with bubble
- - show typing
- - show a rules popup when user joins the room
- - implement a "report user" feature, if 5 users report a user: ban him for 20 minutes, on 3 continuous bans, give a 10 days ban
- - implement a "mute user" feature for all users so they can mute anybody.
- */
 import { Head, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, nextTick } from 'vue';
 import { Inertia } from '@inertiajs/inertia';
@@ -23,6 +13,19 @@ const newMessage = ref('');
 const members = ref([]);
 const loading = ref(true);
 const error = ref(null);
+
+const senderColors = [
+    '#ff5733', '#33ff57', '#3357ff', '#ff33a1', '#a133ff', '#33fff6', '#ffc733', '#ff3333'
+];
+
+const getSenderColor = (sender) => {
+    let hash = 0;
+    for (let i = 0; i < sender.length; i++) {
+        hash = sender.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % senderColors.length;
+    return senderColors[index];
+};
 
 const sendMessage = async () => {
     if (!newMessage.value.trim()) return;
@@ -41,7 +44,7 @@ const fetchMessages = async () => {
         const response = await axios.get(`/chat/${roomId.value}/messages`);
         messages.value = response.data;
     } catch (err) {
-        console.error('Failed to fetch messages from the void:', err);
+        console.error('Failed to fetch messages:', err);
     }
 };
 
@@ -50,7 +53,7 @@ const fetchMembers = async () => {
         const response = await axios.get(`/chat/${roomId.value}/members`);
         members.value = response.data;
     } catch (err) {
-        console.error('Failed to fetch members from the void:', err);
+        console.error('Failed to fetch members:', err);
     }
 };
 
@@ -70,7 +73,6 @@ const scrollToBottom = () => {
 
 onMounted(async () => {
     try {
-
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -80,7 +82,8 @@ onMounted(async () => {
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
-        const oneMinuteAgo = new Date(now.getTime() - 60000); // 60000ms = 1 minute
+
+        const oneMinuteAgo = new Date(now.getTime() - 60000);
         const hoursAgo = String(oneMinuteAgo.getHours()).padStart(2, '0');
         const minutesAgo = String(oneMinuteAgo.getMinutes()).padStart(2, '0');
         const timeStringAgo = `${hoursAgo}-${minutesAgo}`;
@@ -88,13 +91,28 @@ onMounted(async () => {
         const hashBufferAgo = await crypto.subtle.digest('SHA-256', dataAgo);
         const hashArrayAgo = Array.from(new Uint8Array(hashBufferAgo));
         const hashHex_1_min_back = hashArrayAgo.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
         const params = new URLSearchParams(window.location.search);
         const picabo = params.get('picabo');
+
         if (picabo !== hashHex && picabo !== hashHex_1_min_back) {
-            //make this alert a bit modern and horror
-        alert("You can't break the protocol, you dummy. Join the room from the page...");
-        Inertia.get('/chat-rooms', {});
-        return;
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div style="font-size: xx-large; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; display: flex; justify-content: center; align-items: center;">
+                    <div style="background: #1a1a1a; color: #ff0000; padding: 20px; border: 2px solid #ff0000; font-family: 'Creepster', cursive; text-align: center;">
+                        <h1>You can't break the protocol, you dummy!</h1>
+                        <p>Join the room from the page...</p>
+                        <button style="background: #ff0000; color: #fff; border: none; padding: 10px 20px; cursor: pointer;" onclick="this.parentElement.parentElement.remove()">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            setTimeout(() => {
+                Inertia.get('/chat-rooms', {});
+            }, 3000);
+
+            return;
         }
 
         window.Echo.private(`chat.${roomId.value}`)
@@ -107,7 +125,6 @@ onMounted(async () => {
                 });
                 scrollToBottom();
             });
-
 
         await Promise.all([fetchMessages(), fetchMembers()]);
         scrollToBottom();
@@ -126,111 +143,169 @@ onMounted(async () => {
         if (csrfToken) {
             formData.append('_token', csrfToken);
         }
-        // Use sendBeacon for reliable delivery during unload
         navigator.sendBeacon(url, formData);
     });
-
 });
 </script>
 
+
 <template>
     <Head :title="`Chat Room - ${room.name}`" />
-    <div class="min-h-screen bg-void-black relative overflow-hidden">
-        <!-- Animated Background -->
-        <div class="absolute inset-0 bg-[url('/images/static-noise.gif')] opacity-10 z-0"></div>
-        <!-- Floating Debris -->
-        <div class="absolute inset-0 opacity-20 z-0">
-            <div v-for="i in 30" :key="i"
-                 class="absolute text-4xl opacity-30 animate-float"
-                 :style="{
-                     left: `${Math.random() * 100}%`,
-                     top: `${Math.random() * 100}%`,
-                     animationDelay: `${Math.random() * 5}s`
-                 }">
-                ☠️柩️👻💀
+    <div class="chat-room">
+        <main class="chat-container">
+            <div class="top-left">
+                <p>Max Members: {{ room.max_members }}</p>
+                <p>Ephemeral: {{ room.is_ephemeral ? 'Yes' : 'No' }}</p>
             </div>
-        </div>
-        <main class="relative z-10 container mx-auto px-4 py-12 h-screen flex flex-col">
-            <!-- Room Header -->
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h1 class="text-3xl font-creepster text-blood-red">
-                        {{ room.name }}
-                    </h1>
-                    <p class="text-ghost-white font-im-fell">
-                        {{ room.description }}
-                    </p>
-                    <p class="text-ghost-white font-im-fell text-sm">
-                        Max Members: {{ room.max_members }} |
-                        Ephemeral: {{ room.is_ephemeral ? 'Yes' : 'No' }}
-                        <span v-if="room.is_ephemeral">
-                            | Self Destructs After: {{ room.self_destruct_hours }} hour(s)
-                        </span>
-                    </p>
-                </div>
-                <div class="text-ghost-white font-im-fell">
-                    <span class="text-blood-red">👥</span> {{ members.length }} Souls
-                </div>
+            <div class="top-right">👥 {{ members.length }} Souls</div>
+            <div class="room-header">
+                <h1>{{ room.name }}</h1>
+                <p>{{ room.description }}</p>
             </div>
-            <!-- Chat Container -->
-            <div class="flex-1 overflow-y-auto mb-6 scrollbar-hide" id="chat-container">
-                <div v-if="loading" class="text-ghost-white text-center">
-                    <div class="animate-pulse">Summoning messages from the void...</div>
-                </div>
-                <div v-else-if="error" class="text-blood-red text-center font-im-fell">
-                    {{ error }}
-                </div>
-                <div v-else class="space-y-4">
-                    <div
-                        v-for="message in messages"
-                        :key="message.id"
-                        class="flex items-start"
-                        :class="{
-                            'justify-end': message.sender_id === $page.props.auth.user.id,
-                            'justify-start': message.sender_id !== $page.props.auth.user.id
-                        }"
-                    >
-                        <div
-                            class="max-w-[75%] p-4 rounded-lg shadow-void-glow"
-                            :class="{
-                                'bg-blood-red/20 border border-blood-red': message.sender_id === $page.props.auth.user.id,
-                                'bg-black/50 border border-blood-red/30': message.sender_id !== $page.props.auth.user.id
-                            }"
-                        >
-                            <div class="text-ghost-white font-im-fell text-sm mb-2">
-                                {{ message.sender }}
-                            </div>
-                            <div :class="{
-                                'text-red-500 font-bold': message.content === 'Dust Cleared by Void',
-                                'text-ghost-white': message.content !== 'Dust Cleared by Void'
-                            }" class="font-im-fell">
-                                {{ message.content }}
-                            </div>
-                            <div class="text-ghost-white font-im-fell text-xs mt-2">
-                                {{ new Date(message.created_at).toLocaleTimeString() }}
-                            </div>
+           <div id="chat-container" class="chat-messages">
+                <div v-if="loading" class="loading">Summoning messages from the void...</div>
+                <div v-else-if="error" class="error">{{ error }}</div>
+                <div v-else>
+                    <div v-for="message in messages" :key="message.id" class="message">
+                        <div class="sender" :style="{ color: getSenderColor(message.sender) }">
+                            {{ message.sender }}
                         </div>
+                        <div :class="['message-content', { 'special-message': message.content === 'Dust Cleared by Void' }]">
+                            {{ message.content }}
+                        </div>
+                        <div class="timestamp">{{ new Date(message.created_at).toLocaleTimeString() }}</div>
                     </div>
                 </div>
             </div>
-            <!-- Message Input -->
-            <div class="bg-black/50 backdrop-blur-sm border border-blood-red/30 rounded-lg p-4">
-                <textarea
-                    v-model="newMessage"
-                    placeholder="Whisper into the void..."
-                    class="w-full bg-transparent text-ghost-white font-im-fell placeholder-ghost-white/50
-                           focus:outline-none focus:ring-2 focus:ring-blood-red resize-none"
-                    rows="2"
-                ></textarea>
-                <button
-                    @click="sendMessage"
-                    class="mt-2 w-full bg-blood-red/20 hover:bg-blood-red/40 border border-blood-red
-                           text-ghost-white py-2 px-4 rounded-lg font-im-fell transition-all
-                           hover:shadow-void-glow"
-                >
-                    Send to the Abyss
-                </button>
+            <div class="message-input">
+                <textarea v-model="newMessage" placeholder="Whisper into the void..."></textarea>
+                <button class="send-button" @click="sendMessage">Send to the Abyss</button>
             </div>
         </main>
     </div>
 </template>
+
+<style scoped>
+.chat-room {
+    background: #0a0a0a;
+    color: #d10000;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Creepster', cursive;
+}
+
+.chat-container {
+    width: 95%;
+    /* max-width: 800px; */
+    display: flex;
+    flex-direction: column;
+    height: 95vh;
+    background: #111;
+    padding: 20px;
+    border: 2px solid #d10000;
+    box-shadow: 0 0 20px #d10000;
+    position: relative;
+}
+
+.top-left {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: #ff6666;
+    font-size: 0.9rem;
+}
+
+.top-right {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+    color: #ff6666;
+}
+
+.room-header {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    background: #222;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.message {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    background: #1a1a1a;
+    color: #fff;
+    border-left: 3px solid #d10000;
+}
+
+.sender {
+    font-weight: bold;
+    color: #ff4444;
+}
+
+.message-content {
+    font-size: 1rem;
+    color: #ddd;
+    font-size: 2rem;
+
+}
+
+.special-message {
+    font-weight: bold;
+    color: #ff0000;
+    text-shadow: 0 0 10px #ff0000;
+}
+
+.timestamp {
+    font-size: 0.8rem;
+    color: #777;
+}
+
+.message-input {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+textarea {
+    width: 100%;
+    background: #333;
+    color: #fff;
+    border: 2px solid #d10000;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 1rem;
+    letter-spacing: 2px;
+
+}
+
+.send-button {
+    background: #d10000;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background 0.3s;
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+}
+
+.send-button:hover {
+    background: #ff0000;
+    box-shadow: 0 0 10px #ff0000;
+}
+</style>

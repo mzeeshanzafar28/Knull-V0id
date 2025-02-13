@@ -17,9 +17,10 @@ class NewChatMessage implements ShouldBroadcast {
     public $plainMessage;
     public $sender;
 
-    public function __construct( $roomId, $encryptedMessage, $sender ) {
+    public function __construct( $roomId, $encryptedMessage, $plainMessage, $sender ) {
         $this->roomId = $roomId;
         $this->encryptedMessage = $encryptedMessage;
+        $this->plainMessage = $plainMessage;
         $this->sender = $sender;
     }
 
