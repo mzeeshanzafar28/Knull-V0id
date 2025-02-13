@@ -51,7 +51,7 @@ Please make sure to update tests as appropriate.
 6. Run `php artisan serve --port 8001`
 7. Run `npm run dev`
 8. Run `php artisan reverb:start --port 8080`
-9. Run `pip install -r requirements.txt`
+9. Run `pip install -r requirements.txt` || After setting up virtual environment according to your OS
 10. Run `python encryption_service.py`
 11. Run `php artisan queue:work`
 
