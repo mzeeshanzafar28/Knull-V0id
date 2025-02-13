@@ -10,6 +10,7 @@ class ChatMessage extends Model {
         'user_id',
         'encrypted_message',
         'iv',
+        'sender',
     ];
 
     public function room() {

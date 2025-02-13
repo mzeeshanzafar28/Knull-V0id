@@ -87,16 +87,17 @@ class ChatController extends Controller
             'chat_room_id'     => $roomId,
             'user_id'          => auth()->id(),
             'encrypted_message'=> $encryptedMessage,
-            'iv'               => $iv
+            'iv'               => $iv,
+            'sender'           => auth()->user()->name,
         ]);
 
         // Broadcast the encrypted message to the room
 
-        event(new NewChatMessage($roomId, $encryptedMessage, auth()->user()->name));
+        event(new NewChatMessage($roomId, $encryptedMessage,$validated['message']  , auth()->user()->name));
         // NewChatMessage::dispatch($roomId, $encryptedMessage, auth()->user()->name);
 
 
-        return response()->json(['status' => 'Message sent']);
+        return response()->json(['status' => 'Message sent', 'sender' => auth()->user()->name]);
     }
 
     /**

@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->text('encrypted_message');
             $table->string('iv'); // IV for encryption
+            $table->string('sender');
             $table->timestamps();
         });
     }

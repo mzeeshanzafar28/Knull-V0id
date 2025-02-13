@@ -14,6 +14,7 @@ class NewChatMessage implements ShouldBroadcast {
 
     public $roomId;
     public $encryptedMessage;
+    public $plainMessage;
     public $sender;
 
     public function __construct( $roomId, $encryptedMessage, $sender ) {
@@ -23,13 +24,12 @@ class NewChatMessage implements ShouldBroadcast {
     }
 
     public function broadcastOn() {
-        // return new Channel( 'chat.' . $this->roomId );
         return new PrivateChannel( 'chat.'.$this->roomId );
     }
 
     public function broadcastWith() {
         return [
-            'message'   => $this->encryptedMessage,
+            'message'   => $this->plainMessage,
             'sender'    => $this->sender,
             'timestamp' => now()->toISOString()
         ];

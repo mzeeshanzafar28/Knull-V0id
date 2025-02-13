@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
+use App\Models\ChatRoom;
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     // return (int) $user->id === (int) $id;
@@ -9,14 +10,14 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 
-// Broadcast::channel('chat.{roomId}', function ($user, $roomId) {
-//     if (!ChatRoom::where('id', $roomId)->exists()) {
-//         return response()->json(['error' => 'Room not found'], 403);
-//     }
+Broadcast::channel('chat.{roomId}', function ($user, $roomId) {
+    if (!ChatRoom::where('id', $roomId)->exists()) {
+        return response()->json(['error' => 'Room not found'], 403);
+    }
 
-//     return [
-//         'id' => $user->id,
-//         'name' => $user->anonymous_alias,
-//         'room_id' => $roomId
-//     ];
-// });
+    return [
+        'id' => $user->id,
+        'name' => $user->name,
+        'room_id' => $roomId
+    ];
+});
