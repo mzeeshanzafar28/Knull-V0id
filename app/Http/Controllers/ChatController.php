@@ -14,8 +14,7 @@ class ChatController extends Controller
     /**
      * Return a list of all chat rooms.
      */
-    public function listRooms(Request $request)
-    {
+    public function listRooms(Request $request){
         $rooms = ChatRoom::all()->map(function ($room) {
             return [
                 'id'                => $room->id,
@@ -35,12 +34,11 @@ class ChatController extends Controller
      * Handle user joining a chat room.
      * Enforces the room capacity and stores the active user in cache.
      */
-    public function joinRoom(Request $request, $roomId)
-    {
+    public function joinRoom(Request $request, $roomId){
         $room = ChatRoom::findOrFail($roomId);
-
         // Count active users in the room using cache
         $activeUsers = cache()->get("chat_room_users_{$roomId}", []);
+        // dd(count($activeUsers));
         if (count($activeUsers) >= $room->max_members) {
             return redirect()->route('listrooms')->with('error', 'Room is full.');
         }
@@ -56,6 +54,18 @@ class ChatController extends Controller
             'members' => array_values($activeUsers),
         ]);
     }
+
+    public function leaveRoom(Request $request, $roomId)
+    {
+        $activeUsers = cache()->get("chat_room_users_{$roomId}", []);
+        $userId = auth()->id();
+        if (isset($activeUsers[$userId])) {
+            unset($activeUsers[$userId]);
+            cache()->put("chat_room_users_{$roomId}", $activeUsers, now()->addMinutes(10));
+        }
+        return response()->json(['status' => 'Left room']);
+    }
+
 
     /**
      * Send a message in a chat room.

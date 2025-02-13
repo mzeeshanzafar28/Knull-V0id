@@ -61,7 +61,7 @@ const scrollToBottom = () => {
             requestAnimationFrame(() => {
                 container.scrollTo({
                     top: container.scrollHeight,
-                    behavior: 'smooth' // Smooth scrolling
+                    behavior: 'smooth'
                 });
             });
         }
@@ -108,6 +108,7 @@ onMounted(async () => {
                 scrollToBottom();
             });
 
+
         await Promise.all([fetchMessages(), fetchMembers()]);
         scrollToBottom();
     } catch (err) {
@@ -116,6 +117,19 @@ onMounted(async () => {
     } finally {
         loading.value = false;
     }
+
+    // Listen for unload events and remove the user from the room
+    window.addEventListener('beforeunload', () => {
+        const url = `/chat/${roomId.value}/leave`;
+        const formData = new FormData();
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (csrfToken) {
+            formData.append('_token', csrfToken);
+        }
+        // Use sendBeacon for reliable delivery during unload
+        navigator.sendBeacon(url, formData);
+    });
+
 });
 </script>
 

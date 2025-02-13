@@ -41,6 +41,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/chat/{roomId}/send', [ChatController::class, 'sendMessage']);
     Route::get('/chat/{roomId}/messages', [ChatController::class, 'fetchMessages']);
     Route::get('/chat/{roomId}/members', [ChatController::class, 'fetchMembers']);
+    Route::post('/chat/{roomId}/leave', [ChatController::class, 'leaveRoom']);
+
 
 
     // File Transfer Routes
