@@ -68,10 +68,11 @@ async function joinRoom(roomId) {
                 Chambers of the Damned
             </h1>
 
-            <!-- Display flash error if available -->
-            <div v-if="flashError" class="mb-4 p-4 bg-red-100 text-red-700 rounded">
-                <center>{{ flashError }}</center>
+           <!-- Display flash error if available -->
+            <div v-if="flashError" class="mb-4 p-4 bg-red-100 text-red-700 rounded flex justify-center items-center text-center">
+                <p>{{ flashError }}</p>
             </div>
+
 
             <!-- Always display rooms even if there was an error -->
             <div v-if="loading" class="text-ghost-white text-center">

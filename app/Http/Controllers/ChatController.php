@@ -34,18 +34,27 @@ class ChatController extends Controller
      * Handle user joining a chat room.
      * Enforces the room capacity and stores the active user in cache.
      */
-    public function joinRoom(Request $request, $roomId){
+    public function joinRoom(Request $request, $roomId)
+    {
         $room = ChatRoom::findOrFail($roomId);
-        // Count active users in the room using cache
         $activeUsers = cache()->get("chat_room_users_{$roomId}", []);
+
         // dd(count($activeUsers));
+
+        $userId = auth()->id();
+        if (isset($activeUsers[$userId])) {
+            return Inertia::render('ChatRooms/Room', [
+                'roomId'  => $roomId,
+                'room'    => $room,
+                'members' => array_values($activeUsers),
+            ]);
+        }
+
         if (count($activeUsers) >= $room->max_members) {
             return redirect()->route('listrooms')->with('error', 'Room is full.');
         }
 
-        // Add current user to active users
-        $userId = auth()->id();
-        $activeUsers[$userId] = ['id' => $userId, 'name' => auth()->user()->anonymous_alias];
+        $activeUsers[$userId] = ['id' => $userId, 'name' => auth()->user()->name];
         cache()->put("chat_room_users_{$roomId}", $activeUsers, now()->addMinutes(10));
 
         return Inertia::render('ChatRooms/Room', [
@@ -113,8 +122,7 @@ class ChatController extends Controller
     /**
      * Fetch all messages for a specific chat room.
      */
-    public function fetchMessages(Request $request, $roomId)
-    {
+    public function fetchMessages(Request $request, $roomId){
         $messages = ChatMessage::where('chat_room_id', $roomId)
                     ->orderBy('created_at', 'asc')
                     ->get();
