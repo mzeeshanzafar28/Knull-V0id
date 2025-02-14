@@ -2,6 +2,11 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { playSound } from '@/utils/sounds';
 import { Head, Link } from '@inertiajs/vue3';
+import { onMounted } from 'vue';
+
+onMounted(async () => {
+    playSound('file_operations');
+});
 
 function playUploadSound() {
     playSound('upload');
@@ -18,7 +23,7 @@ function playDownloadSound() {
             <!-- Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 z-10">
                 <!-- Upload Card -->
-                <div class="w-96 h-44 bg-black/50 backdrop-blur-sm border-2 border-blood-red rounded-lg p-8 
+                <div class="w-96 h-44 bg-black/50 backdrop-blur-sm border-2 border-blood-red rounded-lg p-8
                           hover:border-blood-red/70 transition-all hover:transform hover:-translate-y-2
                           shadow-void-glow hover:shadow-void-glow-intense cursor-pointer"
                     @click="playUploadSound(); $inertia.visit(route('filesUpload'))">
@@ -29,7 +34,7 @@ function playDownloadSound() {
                 </div>
 
                 <!-- Download Card -->
-                <div class="w-96 h-44 bg-black/50 backdrop-blur-sm border-2 border-blood-red rounded-lg p-8 
+                <div class="w-96 h-44 bg-black/50 backdrop-blur-sm border-2 border-blood-red rounded-lg p-8
                           hover:border-blood-red/70 transition-all hover:transform hover:-translate-y-2
                           shadow-void-glow hover:shadow-void-glow-intense cursor-pointer"
                     @click="playDownloadSound(); $inertia.visit(route('filesDownload'))">

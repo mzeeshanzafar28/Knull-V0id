@@ -1,7 +1,8 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { playSound } from '@/utils/sounds';
+
 
 const redirecting = ref(false);
 
@@ -12,7 +13,7 @@ function openDoor(url) {
     const door = event.currentTarget;
     door.classList.add('door-open');
 
-    playSound('door_open');
+    // playSound('door_open');
 
     setTimeout(() => {
         window.location.href = url;
@@ -22,6 +23,12 @@ function openDoor(url) {
 function playHoverSound() {
     playSound('door_creak');
 }
+
+onMounted(async () => {
+    playSound('home_bg');
+});
+
+
 </script>
 
 <template>

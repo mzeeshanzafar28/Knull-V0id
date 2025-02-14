@@ -3,6 +3,8 @@ import { Head, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, nextTick } from 'vue';
 import { Inertia } from '@inertiajs/inertia';
 import axios from 'axios';
+import { playSound } from '@/utils/sounds';
+
 
 const { props } = usePage();
 const room = ref(props.room);
@@ -28,6 +30,8 @@ const getSenderColor = (sender) => {
 };
 
 const sendMessage = async () => {
+    playSound('message_sent');
+
     if (!newMessage.value.trim()) return;
     try {
         await axios.post(`/chat/${roomId.value}/send`, {
@@ -128,6 +132,7 @@ onMounted(async () => {
                     sender: data.sender,
                     created_at: data.timestamp
                 });
+                playSound('message_received');
                 scrollToBottom();
             });
 

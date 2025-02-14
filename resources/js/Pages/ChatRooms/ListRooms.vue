@@ -3,19 +3,20 @@ import { Head, usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { Inertia } from '@inertiajs/inertia';
+import { playSound } from '@/utils/sounds';
 
 const { props } = usePage();
 const rooms = ref([]);
 const loading = ref(true);
 
-// Use a reactive variable to hold the flash error
 const flashError = ref(props.flash.error || '');
 
-// Separate out "The crown of Zod" room if needed
 const zodRoom = computed(() => rooms.value.find(r => r.name === 'The crown of Zod'));
 const otherRooms = computed(() => rooms.value.filter(r => r.name !== 'The crown of Zod'));
 
 onMounted(async () => {
+    playSound('list_rooms');
+
     try {
         const response = await axios.post('/chat-rooms');
         rooms.value = response.data;
@@ -34,6 +35,8 @@ onMounted(async () => {
 });
 
 async function joinRoom(roomId) {
+    playSound('join_room');
+
     try {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
