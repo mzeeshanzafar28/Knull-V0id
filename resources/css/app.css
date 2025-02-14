@@ -12,6 +12,14 @@
     display: none;
 }
 
+body {
+    /* overflow-y: auto !important; */
+}
+
+
+body::-webkit-scrollbar {
+    display: none;
+}
 
 .smoke-effect {
     background: linear-gradient(45deg,

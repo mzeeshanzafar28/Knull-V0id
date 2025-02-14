@@ -38,7 +38,7 @@ function handleImageError() {
         <!-- Top Right Button -->
         <header class="absolute top-0 right-0 z-50 p-6 text-red-600">
             <nav v-if="canLogin" class="flex justify-end">
-                <Link @mouseenter="playSound('help')" v-if="$page.props.auth.user" :href="route('dashboard')"
+                <Link v-if="$page.props.auth.user" :href="route('dashboard')"
                     class="rounded-md px-3 py-2 font-im-fell text-ghost-white ring-1 ring-blood-red transition hover:bg-gray-900 hover:ring-blood-red/50 focus:outline-none">
                 Enter the Lair
                 </Link>

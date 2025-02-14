@@ -90,6 +90,10 @@ onMounted(async () => {
 </template>
 
 <style>
+body {
+    /* overflow-y: auto !important; */
+}
+
 .castle-door {
     width: 400px;
     height: 800px;

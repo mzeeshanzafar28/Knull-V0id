@@ -30,7 +30,7 @@ const getSenderColor = (sender) => {
 };
 
 const sendMessage = async () => {
-    playSound('message_sent');
+    // playSound('message_sent');
 
     if (!newMessage.value.trim()) return;
     try {
@@ -157,14 +157,15 @@ onMounted(async () => {
     });
 });
 
-setInterval( ()=>{
+setInterval(() => {
     fetchMembers();
-},2000 );
+}, 2000);
 
 </script>
 
 
 <template>
+
     <Head :title="`Chat Room - ${room.name}`" />
     <div class="chat-room">
         <main class="chat-container">
@@ -177,7 +178,7 @@ setInterval( ()=>{
                 <h1>{{ room.name }}</h1>
                 <p class="description">{{ room.description }}</p>
             </div>
-           <div id="chat-container" class="chat-messages">
+            <div id="chat-container" class="chat-messages">
                 <div v-if="loading" class="loading">Summoning messages from the void...</div>
                 <div v-else-if="error" class="error">{{ error }}</div>
                 <div v-else>
@@ -185,7 +186,8 @@ setInterval( ()=>{
                         <div class="sender" :style="{ color: getSenderColor(message.sender) }">
                             {{ message.sender }}
                         </div>
-                        <div :class="['message-content', { 'special-message': message.content === 'Dust Cleared by Void' }]">
+                        <div
+                            :class="['message-content', { 'special-message': message.content === 'Dust Cleared by Void' }]">
                             {{ message.content }}
                         </div>
                         <div class="timestamp">{{ new Date(message.created_at).toLocaleTimeString() }}</div>
@@ -193,12 +195,8 @@ setInterval( ()=>{
                 </div>
             </div>
             <div class="message-input">
-                <textarea
-                v-model="newMessage"
-                placeholder="Whisper into the void..."
-                @keydown.enter.exact.prevent="sendMessage"
-                @keydown.shift.enter="addNewLine"
-            ></textarea>
+                <textarea v-model="newMessage" placeholder="Whisper into the void..."
+                    @keydown.enter.exact.prevent="sendMessage" @keydown.shift.enter="addNewLine"></textarea>
                 <button class="send-button" @click="sendMessage">Send to the Abyss</button>
             </div>
         </main>
@@ -229,6 +227,10 @@ setInterval( ()=>{
     position: relative;
 }
 
+.chat-messages::-webkit-scrollbar {
+    display: none;
+}
+
 .top-left {
     position: absolute;
     top: 10px;
@@ -251,7 +253,7 @@ setInterval( ()=>{
     font-size: 1.5rem;
 }
 
-.description{
+.description {
     color: bisque;
     font-size: medium;
 }
