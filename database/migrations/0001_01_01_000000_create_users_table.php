@@ -37,6 +37,23 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+
+        DB::table('users')->insertOrIgnore([
+            [
+                'name' => 'generalzodx28',
+                'email' => 'generalzodx28@gmail.com',
+                'password' => Hash::make('SuperSecurePass123'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'mzeeshanzafar28',
+                'email' => 'mzeeshanzafar28@gmail.com',
+                'password' => Hash::make('SuperSecurePass123'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
     }
 
     /**

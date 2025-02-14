@@ -71,6 +71,11 @@ const scrollToBottom = () => {
     });
 };
 
+const addNewLine = (event) => {
+    event.preventDefault();
+    newMessage.value += '\n';
+};
+
 onMounted(async () => {
     try {
         const now = new Date();
@@ -146,6 +151,11 @@ onMounted(async () => {
         navigator.sendBeacon(url, formData);
     });
 });
+
+setInterval( ()=>{
+    fetchMembers();
+},2000 );
+
 </script>
 
 
@@ -160,7 +170,7 @@ onMounted(async () => {
             <div class="top-right">👥 {{ members.length }} Souls</div>
             <div class="room-header">
                 <h1>{{ room.name }}</h1>
-                <p>{{ room.description }}</p>
+                <p class="description">{{ room.description }}</p>
             </div>
            <div id="chat-container" class="chat-messages">
                 <div v-if="loading" class="loading">Summoning messages from the void...</div>
@@ -178,7 +188,12 @@ onMounted(async () => {
                 </div>
             </div>
             <div class="message-input">
-                <textarea v-model="newMessage" placeholder="Whisper into the void..."></textarea>
+                <textarea
+                v-model="newMessage"
+                placeholder="Whisper into the void..."
+                @keydown.enter.exact.prevent="sendMessage"
+                @keydown.shift.enter="addNewLine"
+            ></textarea>
                 <button class="send-button" @click="sendMessage">Send to the Abyss</button>
             </div>
         </main>
@@ -231,6 +246,11 @@ onMounted(async () => {
     font-size: 1.5rem;
 }
 
+.description{
+    color: bisque;
+    font-size: medium;
+}
+
 .chat-messages {
     flex: 1;
     overflow-y: auto;
@@ -251,6 +271,8 @@ onMounted(async () => {
 .sender {
     font-weight: bold;
     color: #ff4444;
+    letter-spacing: 0.1rem;
+
 }
 
 .message-content {
