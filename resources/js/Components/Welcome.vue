@@ -402,4 +402,11 @@ body {
         url('/images/wood-texture-void.jpg');
     border-color: #4444ff;
 }
+
+
+html {
+    overflow-y: auto !important;
+}
+
 </style>
+

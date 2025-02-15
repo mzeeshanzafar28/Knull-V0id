@@ -5,7 +5,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\FileController;
-
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -16,23 +17,38 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
+// Require authentication and email verification for dashboard access
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 });
 
-//404 page
-Route::fallback(function () {
-    return Inertia::render('Errors/404',['title' => '404 - Page Not Found']);
+// Email Verification Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/email/verify', function () {
+        return Inertia::render('Auth/VerifyEmail');
+    })->name('verification.notice');
+
+    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+        $request->fulfill();
+        return redirect('/dashboard');
+    })->middleware(['signed'])->name('verification.verify');
+
+    Route::post('/email/verification-notification', function (Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('status', 'verification-link-sent');
+    })->middleware(['throttle:6,1'])->name('verification.send');
 });
 
+// 404 Page
+Route::fallback(function () {
+    return Inertia::render('Errors/404', ['title' => '404 - Page Not Found']);
+});
+
+// Protected routes requiring authentication **but NOT email verification**
 Route::middleware(['auth:sanctum'])->group(function () {
-    //Chat Rooms Routes
+    // Chat Rooms Routes
     Route::get('/chat-rooms', function () {
         return Inertia::render('ChatRooms/ListRooms');
     })->name('listrooms');
@@ -42,8 +58,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/chat/{roomId}/messages', [ChatController::class, 'fetchMessages']);
     Route::get('/chat/{roomId}/members', [ChatController::class, 'fetchMembers']);
     Route::post('/chat/{roomId}/leave', [ChatController::class, 'leaveRoom']);
-
-
 
     // File Transfer Routes
     Route::get('/files', function () {
@@ -59,6 +73,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/files/upload', [FileController::class, 'upload']);
     Route::post('/files/download', [FileController::class, 'download']);
     Route::post('/files/delete/{file}', [FileController::class, 'delete']);
-
-
 });

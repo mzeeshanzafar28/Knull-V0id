@@ -12,11 +12,6 @@
     display: none;
 }
 
-body {
-    /* overflow-y: auto !important; */
-}
-
-
 body::-webkit-scrollbar {
     display: none;
 }
