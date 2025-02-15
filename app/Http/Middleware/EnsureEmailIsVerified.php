@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Redirect;
 
 class EnsureEmailIsVerified {
     public function handle( Request $request, Closure $next ) {
+        // dd( 'here' );
         if ( !$request->user() || !$request->user()->hasVerifiedEmail() ) {
             return Redirect::route( 'verification.notice' );
         }
