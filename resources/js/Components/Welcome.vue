@@ -2,6 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import { playSound } from '@/utils/sounds';
+import { Inertia } from '@inertiajs/inertia';
+
 
 
 const redirecting = ref(false);
@@ -12,16 +14,24 @@ function openDoor(url) {
 
     const door = event.currentTarget;
     door.classList.add('door-open');
+    door.classList.add('hide-elements');
 
     // playSound('door_open');
 
     setTimeout(() => {
-        window.location.href = url;
+        Inertia.visit(url);
     }, 1500);
 }
 
+
 function playHoverSound() {
     playSound('door_creak');
+    const door = event.currentTarget;
+    door.classList.add('hide-elements');
+
+}function showElements() {
+    const door = event.currentTarget;
+    door.classList.remove('hide-elements');
 }
 
 onMounted(async () => {
@@ -44,7 +54,7 @@ onMounted(async () => {
         <div class="blood-drips"></div>
 
         <div class="flex gap-16 z-10 relative">
-            <div class="castle-door blood-door" @click="openDoor('/chat-rooms')" @mouseenter="playHoverSound">
+            <div class="castle-door blood-door" @click="openDoor('/chat-rooms')" @mouseenter="playHoverSound" @mouseleave="showElements">
                 <div class="door-left"></div>
                 <div class="door-right"></div>
                 <div class="door-knocker">
@@ -64,7 +74,7 @@ onMounted(async () => {
                 </div>
             </div>
 
-            <div class="castle-door void-door" @click="openDoor('/files')" @mouseenter="playHoverSound">
+            <div class="castle-door void-door" @click="openDoor('/files')" @mouseenter="playHoverSound" @mouseleave="showElements">
                 <div class="door-left"></div>
                 <div class="door-right"></div>
                 <div class="door-knocker">
@@ -141,6 +151,12 @@ body {
 
 .castle-door.door-open .door-right {
     transform: rotateY(90deg);
+}
+
+.castle-door.hide-elements .door-eyes,
+.castle-door.hide-elements .face,
+.castle-door.hide-elements .ring {
+    display: none;
 }
 
 .door-eyes {
