@@ -13,7 +13,8 @@ return new class extends Migration
             $table->foreignId('chat_room_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->text('encrypted_message');
-            $table->string('iv'); // IV for encryption
+            $table->text('kyber_ciphertext');
+            $table->string('iv');
             $table->string('sender');
             $table->timestamps();
         });

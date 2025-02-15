@@ -9,6 +9,7 @@ class ChatMessage extends Model {
         'chat_room_id',
         'user_id',
         'encrypted_message',
+        'kyber_ciphertext',
         'iv',
         'sender',
     ];

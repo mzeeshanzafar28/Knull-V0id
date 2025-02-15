@@ -111,11 +111,17 @@ onMounted(async () => {
                     <div style="background: #1a1a1a; color: #ff0000; padding: 20px; border: 2px solid #ff0000; font-family: 'Creepster', cursive; text-align: center;">
                         <h1>You can't break the protocol, you dummy!</h1>
                         <p>Join the room from the page...</p>
-                        <button style="background: #ff0000; color: #fff; border: none; padding: 10px 20px; cursor: pointer;" onclick="this.parentElement.parentElement.remove()">OK</button>
+                        <button id="goAheadBtn" style="background: #ff0000; color: #fff; border: none; padding: 10px 20px; cursor: pointer;">OK</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
+
+            const btn = modal.querySelector('#goAheadBtn');
+            btn.addEventListener('click', () => {
+            modal.remove();
+            Inertia.get('/chat-rooms', {});
+            });
 
             setTimeout(() => {
                 Inertia.get('/chat-rooms', {});
@@ -123,6 +129,8 @@ onMounted(async () => {
 
             return;
         }
+
+
 
         window.Echo.private(`chat.${roomId.value}`)
             .listen('.NewChatMessage', (data) => {

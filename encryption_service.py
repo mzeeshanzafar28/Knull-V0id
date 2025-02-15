@@ -1,32 +1,55 @@
 from flask import Flask, request, jsonify
 from Crypto.Cipher import AES
 import base64
-import os
+import oqs
 
 app = Flask(__name__)
 
-SECRET_KEY = os.urandom(16)  # 16-byte AES key
+# Initialize Kyber KEM once and store keypair
+kem = oqs.KeyEncapsulation("Kyber512")
+public_key = kem.generate_keypair()  # Generate a single keypair
+private_key = kem  # Store the key encapsulation mechanism with the private key
 
 def encrypt_message(message):
-    cipher = AES.new(SECRET_KEY, AES.MODE_EAX)
+    """
+    Encrypts a message using Kyber KEM for key exchange and AES for encryption.
+    """
+    # Step 1: Encapsulate a shared secret using the stored public key
+    kyber_ciphertext, shared_secret = kem.encap_secret(public_key)
+
+    # Step 2: Use the shared secret as the AES key
+    cipher = AES.new(shared_secret[:16], AES.MODE_EAX)  # Use first 16 bytes as AES key
     nonce = cipher.nonce
-    ciphertext, tag = cipher.encrypt_and_digest(message.encode('utf-8'))
-    # Return the concatenation of nonce + ciphertext, plus the nonce separately
-    return base64.b64encode(nonce + ciphertext).decode('utf-8'), base64.b64encode(nonce).decode('utf-8')
+    ciphertext_aes, tag = cipher.encrypt_and_digest(message.encode('utf-8'))
 
-def decrypt_message(encrypted_message, iv):
+    # Return Kyber ciphertext, encrypted AES message (nonce + ciphertext), and IV
+    return (
+        base64.b64encode(kyber_ciphertext).decode('utf-8'),  # Kyber ciphertext
+        base64.b64encode(nonce + ciphertext_aes).decode('utf-8'),  # Encrypted message
+        base64.b64encode(nonce).decode('utf-8')  # IV (nonce)
+    )
+
+def decrypt_message(kyber_ciphertext, encrypted_message, iv):
+    """
+    Decrypts a message using Kyber KEM for key exchange and AES for decryption.
+    """
     try:
-        nonce = base64.b64decode(iv)
-        encrypted_data = base64.b64decode(encrypted_message)
-        # Remove the nonce (first len(nonce) bytes) from the encrypted data
-        ciphertext = encrypted_data[len(nonce):]
-        cipher = AES.new(SECRET_KEY, AES.MODE_EAX, nonce=nonce)
-        decrypted_message = cipher.decrypt(ciphertext).decode('utf-8')
-        return decrypted_message
-    except Exception as e:
-        #return f"Decryption failed: {str(e)}"
-        return f"Dust Cleared by Void"
+        # Step 1: Decapsulate the shared secret using Kyber KEM
+        kyber_ciphertext = base64.b64decode(kyber_ciphertext)
+        shared_secret = private_key.decap_secret(kyber_ciphertext)
 
+        # Step 2: Extract the nonce and AES ciphertext
+        iv = base64.b64decode(iv)
+        encrypted_data = base64.b64decode(encrypted_message)
+        ciphertext_aes = encrypted_data[len(iv):]  # Remaining bytes are AES ciphertext
+
+        # Step 3: Decrypt the AES ciphertext
+        cipher = AES.new(shared_secret[:16], AES.MODE_EAX, nonce=iv)
+        decrypted_message = cipher.decrypt(ciphertext_aes).decode('utf-8')
+        return decrypted_message
+
+    except Exception as e:
+        return "Dust Cleared by Void"
 
 @app.route('/encrypt', methods=['POST'])
 def encrypt():
@@ -34,17 +57,29 @@ def encrypt():
     message = data.get("message")
     if not message:
         return jsonify({"error": "No message provided"}), 400
-    encrypted_message, iv = encrypt_message(message)
-    return jsonify({"encrypted_message": encrypted_message, "iv": iv})
+
+    # Encrypt the message using Kyber KEM and AES
+    kyber_ciphertext, encrypted_message, iv = encrypt_message(message)
+
+    return jsonify({
+        "kyber_ciphertext": kyber_ciphertext,
+        "encrypted_message": encrypted_message,
+        "iv": iv
+    })
 
 @app.route('/decrypt', methods=['POST'])
 def decrypt():
     data = request.json
+    kyber_ciphertext = data.get("kyber_ciphertext")
     encrypted_message = data.get("encrypted_message")
     iv = data.get("iv")
-    if not encrypted_message or not iv:
+
+    if not kyber_ciphertext or not encrypted_message or not iv:
         return jsonify({"error": "Missing parameters"}), 400
-    decrypted = decrypt_message(encrypted_message, iv)
+
+    # Decrypt the message using Kyber KEM and AES
+    decrypted = decrypt_message(kyber_ciphertext, encrypted_message, iv)
+
     return jsonify({"decrypted_message": decrypted})
 
 if __name__ == '__main__':

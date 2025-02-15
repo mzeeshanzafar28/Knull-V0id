@@ -96,6 +96,7 @@ class ChatController extends Controller
             'message' => $validated['message']
         ]);
 
+
         if ($encryptionResponse->failed()) {
             return response()->json(['error' => 'Encryption failed'], 500);
         }
@@ -103,12 +104,14 @@ class ChatController extends Controller
         $encryptedData = $encryptionResponse->json();
         $encryptedMessage = $encryptedData['encrypted_message'];
         $iv = $encryptedData['iv'];
+        $kyber_ciphertext = $encryptedData['kyber_ciphertext'];
 
         // Store encrypted message in the database
         $message = ChatMessage::create([
             'chat_room_id'     => $roomId,
             'user_id'          => auth()->id(),
             'encrypted_message'=> $encryptedMessage,
+            'kyber_ciphertext' => $kyber_ciphertext,
             'iv'               => $iv,
             'sender'           => auth()->user()->name,
         ]);
@@ -130,13 +133,15 @@ class ChatController extends Controller
                     ->orderBy('created_at', 'asc')
                     ->get();
 
+
+
         $decryptedMessages = $messages->map(function ($msg) {
             // Call the Python decryption service for each message
             $response = Http::post('http://127.0.0.1:5000/decrypt', [
+                'kyber_ciphertext' => $msg->kyber_ciphertext,
                 'encrypted_message' => $msg->encrypted_message,
                 'iv' => $msg->iv,
             ]);
-
             // If the decryption is successful, use the decrypted message; otherwise set an error text
             $decryptedContent = $response->successful()
                 ? $response->json()['decrypted_message']
