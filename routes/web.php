@@ -8,6 +8,11 @@ use App\Http\Controllers\FileController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
+// Route::get('/session-test', function () {
+//     session(['test' => 'Session is working']);
+//     return session('test');
+// });
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
