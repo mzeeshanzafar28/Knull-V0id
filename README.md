@@ -98,7 +98,7 @@ Together, this layered approach ensures that even if a quantum computer can brea
 
 ## 🤝 Contributing to the Chaos
 
-This hell is solo-built by *Me* 🔥 but pull requests are welcome. If you're making major changes, open an issue first to discuss them.
+This hell is solo-built by *Me | Muhammad Zeeshan Zafar* 🔥 but pull requests are welcome. If you're making major changes, open an issue first to discuss them.
 
 **Remember:** If you're changing the abyss, update the tests accordingly!
 
@@ -121,15 +121,15 @@ This hell is solo-built by *Me* 🔥 but pull requests are welcome. If you're ma
 5. Run `php artisan migrate`
 6. Start the Laravel server:  
    ```sh
-   php artisan serve --port=8001
+   php artisan serve --host=0.0.0.0 --port=8001
    ```
 7. Start Vite for the frontend:  
    ```sh
-   npm run dev
+   npm run dev --host=0.0.0.0
    ```
 8. Start WebSockets:  
    ```sh
-   php artisan reverb:start --port=8080
+   php artisan reverb:start --host=0.0.0.0 --port=8080
    ```
 9. Start the Queue Worker:  
    ```sh
@@ -195,16 +195,108 @@ This hell is solo-built by *Me* 🔥 but pull requests are welcome. If you're ma
     python encryption_service.py
     ```
 
-🚨 **Note:** If you run into installation issues, please refer to the official [liboqs-python GitHub repository](https://github.com/open-quantum-safe/liboqs-python).
+🚨 **Note:** If you run into installation issues in oqs, please refer to the official [liboqs-python GitHub repository](https://github.com/open-quantum-safe/liboqs-python).
 
 ---
+
+🎉 **You're all set! Welcome to the abyss...**  
+Access the void at: [http://localhost:8001](http://localhost:8001)
 
 ## 📬 Email Verification
 
-Our system uses a horror-themed email template to send verification emails. When a user registers, they receive an email that looks like a message from the abyss. The email contains a dark red background, our logo (converted to SVG or embedded as a Base64 image), and a custom “Verify Email Address” button.  
-*For details on how the email template is built, please see our documentation in the `emails/` folder.*
+Void Verfies Emails. When a user registers, they receive an email from the abyss, after which they can login to the hell. Configure mail details in .env file to obtain the abyss's email.
 
 ---
+
+## 🕵️‍♂️ TOR SETUP (Linux)  
+
+Follow these steps to host **Knull-V0id** on the **Tor/Onion Network**:
+
+### 1️⃣ **Modify Configuration Files**  
+
+1. **Update Vite Config:**  
+   - Open `vite.config.js`  
+   - **Comment out** the current `export`  
+   - **Uncomment** the **hidden service export**  
+
+2. **Enable Onion Middleware:**  
+   - Open `bootstrap/app.php`  
+   - Uncomment:  
+     ```php
+     \App\Http\Middleware\ForceOnionUrls::class
+     ```
+
+### 2️⃣ **Install & Configure Tor**  
+
+3. **Install Tor:**  
+   ```sh
+   sudo apt-get install tor
+   ```
+
+4. **Edit Tor Configuration:**  
+   ```sh
+   sudo nano /etc/tor/torrc
+   ```
+   - Add the following at the **end** of the file:  
+     ```
+     # Define a hidden service for Knull-Void
+     HiddenServiceDir /var/lib/tor/hidden_service/
+     HiddenServicePort 80 127.0.0.1:8001
+     HiddenServicePort 5173 127.0.0.1:5173
+     ```
+
+5. **Restart Tor Service:**  
+   ```sh
+   sudo systemctl restart tor
+   ```
+
+### 3️⃣ **Obtain Your Onion Address**  
+
+6. **Get the Generated Onion Address:**  
+   ```sh
+   sudo cat /var/lib/tor/hidden_service/hostname
+   ```
+   - This will print the **.onion** address for **Knull-Void**.
+
+7. **Update Environment Variables:**  
+   Edit your `.env` file and set:  
+   ```ini
+   APP_URL=http://xyzEXAMPLE123.onion
+   VITE_APP_ONION_DOMAIN=xyzEXAMPLE123.onion
+   VITE_APP_URL="${APP_URL}"
+   ```
+
+### 4️⃣ **Build & Restart the Server**  
+
+8. **Build the Frontend:**  
+   ```sh
+   npm run build
+   ```
+
+9. **Restart Services:**  
+   - Stop `npm run dev` & `php artisan serve` if they are running.  
+   - Restart Laravel & Vite using the correct **ports & hosts** from Step 6 & 7.
+
+10. **Clear Cache & Config:**  
+    ```sh
+    php artisan config:clear
+    php artisan cache:clear
+    php artisan view:clear
+    ```
+
+### 5️⃣ **Final Steps**  
+
+11. **Open Tor Browser:**  
+    - **Disable HTTPS-Only Mode**  
+    - **Reduce security to standard**  
+
+12. **Visit the .onion Address**  
+    - Paste the **.onion** address from Step 6 into the browser.  
+
+---
+
+### 🎉 **KABOOM! Void is now hosted on Onion!** 🎭
+
 
 ## 🛡️ Reach the Hell Master
 
@@ -218,7 +310,6 @@ Our system uses a horror-themed email template to send verification emails. When
 
 ---
 
-🎉 **You're all set! Welcome to the abyss...**  
-Access the void at: [http://localhost:8001](http://localhost:8001)
+
 
 ---
