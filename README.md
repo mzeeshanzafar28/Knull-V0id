@@ -125,7 +125,7 @@ This hell is solo-built by *Me | Muhammad Zeeshan Zafar* 🔥 but pull requests 
    ```
 7. Start Vite for the frontend:  
    ```sh
-   npm run dev --host=0.0.0.0
+   npm run dev --host=0.0.0.0 --port=5173
    ```
 8. Start WebSockets:  
    ```sh
@@ -168,7 +168,7 @@ This hell is solo-built by *Me | Muhammad Zeeshan Zafar* 🔥 but pull requests 
     ```sh
     cmake -S liboqs -B liboqs/build -DBUILD_SHARED_LIBS=ON
     cmake --build liboqs/build --parallel 8
-    sudo cmake --build liboqs/build --target install  # Linux/Mac
+    cmake --build liboqs/build --target install  | (run with sudo on Linux)
     ```
 17. Set your library path:
     ```sh
@@ -196,6 +196,7 @@ This hell is solo-built by *Me | Muhammad Zeeshan Zafar* 🔥 but pull requests 
     ```
 
 🚨 **Note:** If you run into installation issues in oqs, please refer to the official [liboqs-python GitHub repository](https://github.com/open-quantum-safe/liboqs-python).
+Windows Fellaws may need to manually install additional stuff like gcc, MingW, Doxygen, cmake, cmake build tools, visual studio build tools etc and set environment varibales for them.
 
 ---
 

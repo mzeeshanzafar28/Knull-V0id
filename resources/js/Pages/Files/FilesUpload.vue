@@ -127,21 +127,23 @@ onMounted(fetchFiles);
                                 <tr v-for="file in files" :key="file.id"
                                     class="border-t border-blood-red/10 hover:bg-black/20 transition-colors">
                                     <td class="p-4 font-im-fell text-ghost-white">{{ file.original_name }}</td>
-                                    <td class="p-4 text-center font-mono text-ghost-white">
+                                    <td class="p-4 text-center font-mono text-ghost-white custom-guy">
                                         {{ file.file_id }}
                                         <button @click="copyToClipboard(file.file_id)" class="ml-2 text-white bg-gray-700 px-2 py-1 rounded-md hover:bg-gray-600">
                                             📋
                                         </button>
                                     </td>
-                                    <td class="p-4 text-center space-x-2">
-                                        <button @click="handleDownload(file.file_id)" class="px-3 py-1 bg-blue-500 hover:bg-blue-700 border border-blue-700 
+                                    <td class="p-4 text-center space-x-2 ">
+                                        <div class="custom-guy">
+                                            <button @click="handleDownload(file.file_id)" class="px-3 py-1 bg-blue-500 hover:bg-blue-700 border border-blue-700
                                                    text-white rounded-lg transition-colors">
                                             Download
                                         </button>
-                                        <button @click="deleteFile(file.id)" class="px-3 py-1 bg-blood-red/20 hover:bg-blood-red/40 border border-blood-red 
+                                        <button @click="deleteFile(file.id)" class="px-3 py-1 bg-blood-red/20 hover:bg-blood-red/40 border border-blood-red
                                                    text-ghost-white rounded-lg transition-colors">
                                             Erase
                                         </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -152,3 +154,16 @@ onMounted(fetchFiles);
         </div>
     </AppLayout>
 </template>
+
+<style scoped>
+.custom-guy {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button{
+    margin: 5%;
+}
+
+</style>
