@@ -92,7 +92,7 @@ class ChatController extends Controller
         $room = ChatRoom::findOrFail($roomId);
 
         // Encrypt message via Python microservice
-        $encryptionResponse = Http::post('http://127.0.0.1:5000/encrypt', [
+        $encryptionResponse = Http::withoutVerifying()->post('https://127.0.0.1:5000/encrypt', [
             'message' => $validated['message']
         ]);
 
@@ -136,13 +136,11 @@ class ChatController extends Controller
 
 
         $decryptedMessages = $messages->map(function ($msg) {
-            // Call the Python decryption service for each message
-            $response = Http::post('http://127.0.0.1:5000/decrypt', [
+            $response = Http::withoutVerifying()->post('https://127.0.0.1:5000/decrypt', [
                 'kyber_ciphertext' => $msg->kyber_ciphertext,
                 'encrypted_message' => $msg->encrypted_message,
                 'iv' => $msg->iv,
             ]);
-            // If the decryption is successful, use the decrypted message; otherwise set an error text
             $decryptedContent = $response->successful()
                 ? $response->json()['decrypted_message']
                 : 'Decryption failed';

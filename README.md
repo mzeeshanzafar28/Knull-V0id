@@ -29,6 +29,7 @@
 - ⚡ **WebSockets Implementation** — Real-time whispers from the dark.
 - 🔢 **Lattice-Based Cryptography** — The cryptographic fortress.
 - 🌀 **Python Microservices** — The unseen forces at work.
+- 📥 **Email Verification** — The void knows you, then you know the void.
 - 🔑 **Kyber KEM** — Post-quantum cryptographic shields engaged.
 
 ---
@@ -190,7 +191,11 @@ This hell is solo-built by *Me | Muhammad Zeeshan Zafar* 🔥 but pull requests 
     ```sh
     python3 liboqs-python/examples/kem.py  # (Replace python3 with python on Windows)
     ```
-21. **Run the encryption server:**
+21. Generate self-signed certificate and private key via OpenSSL for using https:
+    ```sh
+    openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365 
+    ```
+22. **Run the encryption server:**
     ```sh
     python encryption_service.py
     ```
