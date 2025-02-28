@@ -200,6 +200,84 @@ This hell is solo-built by *Me | Muhammad Zeeshan Zafar* 🔥 but pull requests 
     python encryption_service.py
     ```
 
+
+---
+
+## 🕵️‍♂️ LOCAL HTTPS / Nginx SETUP (Linux)  
+
+Follow these steps to host **Knull-V0id** **over HTTPS on your local server**:  
+
+> **This step is only needed if you are setting up the void on your localhost and plan to expose your IP for public access OR if you are hosting the void on a VPS and need to set up HTTPS locally.**  
+
+### **1️⃣ Install Nginx & Generate SSL Certificates**  
+
+```sh
+sudo apt update
+sudo apt install nginx -y
+sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/nginx/cert.key -out /etc/nginx/cert.crt -days 365 -nodes
+```
+
+---
+
+### **2️⃣ Configure Nginx**  
+
+1. Open the Nginx config file for editing:  
+   ```sh
+   sudo nano /etc/nginx/sites-available/knullvoid
+   ```
+
+2. Add the following configuration in the file:  
+
+   ```nginx
+   server {
+       listen 443 ssl;
+       server_name localhost;
+
+       ssl_certificate /etc/nginx/cert.crt;
+       ssl_certificate_key /etc/nginx/cert.key;
+
+       location / {
+           proxy_pass http://127.0.0.1:8001;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+   }
+
+   server {
+       listen 80;
+       server_name localhost;
+       return 301 https://localhost$request_uri;
+   }
+   ```
+
+3. **Enable the Nginx Configuration**:  
+   ```sh
+   sudo ln -s /etc/nginx/sites-available/knullvoid /etc/nginx/sites-enabled/
+   ```
+
+4. **Restart Nginx to Apply Changes**:  
+   ```sh
+   sudo systemctl restart nginx
+   ```
+
+---
+
+### **3️⃣ Restart Laravel Server**  
+
+Now, restart your Laravel application:  
+
+```sh
+php artisan serve --host=0.0.0.0 --port=8001
+```
+
+---
+
+**🎉 Done!** You can now access Knull-V0id securely at:  
+🔗 **https://localhost:8001**
+
+
 🚨 **Note:** If you run into installation issues in oqs, please refer to the official [liboqs-python GitHub repository](https://github.com/open-quantum-safe/liboqs-python).
 Windows Fellaws may need to manually install additional stuff like gcc, MingW, Doxygen, cmake, cmake build tools, visual studio build tools etc and set environment varibales for them.
 
