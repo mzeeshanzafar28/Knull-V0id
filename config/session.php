@@ -13,12 +13,12 @@ return [
     | incoming requests. Laravel supports a variety of storage options to
     | persist session data. Database storage is a great default choice.
     |
-    | Supported: "file", "cookie", "database", "apc",
-    |            "memcached", "redis", "dynamodb", "array"
+    | Supported: 'file', 'cookie', 'database', 'apc',
+    |            'memcached', 'redis', 'dynamodb', 'array'
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'database'),
+    'driver' => env( 'SESSION_DRIVER', 'database' ),
 
     /*
     |--------------------------------------------------------------------------
@@ -32,9 +32,9 @@ return [
     |
     */
 
-    'lifetime' => env('SESSION_LIFETIME', 120),
+    'lifetime' => env( 'SESSION_LIFETIME', 120 ),
 
-    'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
+    'expire_on_close' => env( 'SESSION_EXPIRE_ON_CLOSE', false ),
 
     /*
     |--------------------------------------------------------------------------
@@ -86,7 +86,7 @@ return [
     |
     */
 
-    'table' => env('SESSION_TABLE', 'sessions'),
+    'table' => env( 'SESSION_TABLE', 'sessions' ),
 
     /*
     |--------------------------------------------------------------------------
@@ -143,7 +143,7 @@ return [
     |
     */
 
-    'path' => env('SESSION_PATH', '/'),
+    'path' => env( 'SESSION_PATH', '/' ),
 
     /*
     |--------------------------------------------------------------------------
@@ -169,7 +169,7 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    'secure' => env( 'SESSION_SECURE_COOKIE' ),
 
     /*
     |--------------------------------------------------------------------------
@@ -200,6 +200,8 @@ return [
     */
 
     'same_site' => env('SESSION_SAME_SITE', 'lax'),
+    // 'same_site' => 'none',
+
 
     /*
     |--------------------------------------------------------------------------
@@ -212,6 +214,6 @@ return [
     |
     */
 
-    'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),
+    'partitioned' => env('SESSION_PARTITIONED_COOKIE', false ),
 
 ];

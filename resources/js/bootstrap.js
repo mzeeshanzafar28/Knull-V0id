@@ -4,9 +4,10 @@ import Pusher from 'pusher-js';
 window.axios = axios;
 
 
-axios.defaults.baseURL = import.meta.env.VITE_APP_URL + ':8001';
+
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 window.axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
+axios.defaults.withCredentials = true;
 
 
 

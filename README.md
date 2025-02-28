@@ -262,6 +262,11 @@ sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/nginx/cert.key -out /etc/ng
    sudo systemctl restart nginx
    ```
 
+5. **Add the following in your resources/js/bootstrap.js file:**:  
+   ```sh
+   axios.defaults.baseURL = import.meta.env.VITE_APP_URL + ':8001';
+   ```
+
 ---
 
 ### **3️⃣ Restart Laravel Server**  
