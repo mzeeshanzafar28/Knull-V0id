@@ -1,4 +1,6 @@
-<img alt="void" src="void.gif" data-hpc="true" class="Box-sc-g0xbh4-0 kzRgrI">
+<p align="center">
+  <img alt="void" src="void.gif" style="width: 100%; max-width: 100%; display: block; margin: auto;">
+</p>
 
 ---
 
