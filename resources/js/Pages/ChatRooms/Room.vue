@@ -1,10 +1,9 @@
 <script setup>
 import { Head, usePage } from '@inertiajs/vue3';
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, computed } from 'vue';
 import { Inertia } from '@inertiajs/inertia';
 import axios from 'axios';
 import { playSound } from '@/utils/sounds';
-
 
 const { props } = usePage();
 const room = ref(props.room);
@@ -15,6 +14,7 @@ const newMessage = ref('');
 const members = ref([]);
 const loading = ref(true);
 const error = ref(null);
+const replyingTo = ref(null);
 
 const senderColors = [
     '#ff5733', '#33ff57', '#3357ff', '#ff33a1', '#a133ff', '#33fff6', '#ffc733', '#ff3333'
@@ -30,14 +30,14 @@ const getSenderColor = (sender) => {
 };
 
 const sendMessage = async () => {
-    // playSound('message_sent');
-
     if (!newMessage.value.trim()) return;
     try {
         await axios.post(`/chat/${roomId.value}/send`, {
-            message: newMessage.value
+            message: newMessage.value,
+            reply_to: replyingTo.value?.id || null
         });
         newMessage.value = '';
+        replyingTo.value = null;
     } catch (err) {
         console.error('Failed to send message:', err);
     }
@@ -80,6 +80,19 @@ const addNewLine = (event) => {
     newMessage.value += '\n';
 };
 
+const startReply = (message) => {
+    replyingTo.value = message;
+    document.querySelector('textarea').focus();
+};
+
+const cancelReply = () => {
+    replyingTo.value = null;
+};
+
+const findOriginalMessage = (messageId) => {
+    return messages.value.find(m => m.id === messageId);
+};
+
 onMounted(async () => {
     try {
         const now = new Date();
@@ -106,21 +119,20 @@ onMounted(async () => {
 
         if (picabo !== hashHex && picabo !== hashHex_1_min_back) {
             const modal = document.createElement('div');
-            modal.innerHTML = `
-                <div style="font-size: xx-large; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; display: flex; justify-content: center; align-items: center;">
+            modal.innerHTML =
+                `<div style="font-size: xx-large; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; display: flex; justify-content: center; align-items: center;">
                     <div style="background: #1a1a1a; color: #ff0000; padding: 20px; border: 2px solid #ff0000; font-family: 'Creepster', cursive; text-align: center;">
                         <h1>You can't break the protocol, you dummy!</h1>
                         <p>Join the room from the page...</p>
                         <button id="goAheadBtn" style="background: #ff0000; color: #fff; border: none; padding: 10px 20px; cursor: pointer;">OK</button>
                     </div>
-                </div>
-            `;
+                </div>`;
             document.body.appendChild(modal);
 
             const btn = modal.querySelector('#goAheadBtn');
             btn.addEventListener('click', () => {
-            modal.remove();
-            Inertia.get('/chat-rooms', {});
+                modal.remove();
+                Inertia.get('/chat-rooms', {});
             });
 
             setTimeout(() => {
@@ -130,15 +142,14 @@ onMounted(async () => {
             return;
         }
 
-
-
         window.Echo.private(`chat.${roomId.value}`)
             .listen('.NewChatMessage', (data) => {
                 messages.value.push({
                     id: data.message_id,
                     content: data.message,
                     sender: data.sender,
-                    created_at: data.timestamp
+                    created_at: data.timestamp,
+                    reply_to: data.reply_to
                 });
                 playSound('message_received');
                 scrollToBottom();
@@ -153,7 +164,6 @@ onMounted(async () => {
         loading.value = false;
     }
 
-    // Listen for unload events and remove the user from the room
     window.addEventListener('beforeunload', () => {
         const url = `/chat/${roomId.value}/leave`;
         const formData = new FormData();
@@ -168,12 +178,9 @@ onMounted(async () => {
 setInterval(() => {
     fetchMembers();
 }, 2000);
-
 </script>
 
-
 <template>
-
     <Head :title="`Chat Room - ${room.name}`" />
     <div class="chat-room">
         <main class="chat-container">
@@ -190,16 +197,36 @@ setInterval(() => {
                 <div v-if="loading" class="loading">Summoning messages from the void...</div>
                 <div v-else-if="error" class="error">{{ error }}</div>
                 <div v-else>
-                    <div v-for="message in messages" :key="message.id" class="message">
+                    <div v-for="message in messages" :key="message.id" class="message" @dblclick="startReply(message)">
+                        <!-- Reply preview for replied messages -->
+                        <div v-if="message.reply_to" class="reply-preview">
+                            <div class="reply-sender" :style="{ color: getSenderColor(findOriginalMessage(message.reply_to)?.sender || 'Unknown') }">
+                                {{ findOriginalMessage(message.reply_to)?.sender || 'Unknown' }}
+                            </div>
+                            <div class="reply-content">
+                                {{ findOriginalMessage(message.reply_to)?.content || 'Message not available' }}
+                            </div>
+                        </div>
                         <div class="sender" :style="{ color: getSenderColor(message.sender) }">
                             {{ message.sender }}
                         </div>
-                        <div
-                            :class="['message-content', { 'special-message': message.content === 'Dust Cleared by Void' }]">
+                        <div :class="['message-content', {
+                            'special-message': message.content === 'Dust Cleared by Void',
+                            'reply-message': message.reply_to
+                        }]">
                             {{ message.content }}
                         </div>
                         <div class="timestamp">{{ new Date(message.created_at).toLocaleTimeString() }}</div>
                     </div>
+                </div>
+            </div>
+            <div class="reply-indicator" v-if="replyingTo">
+                <div class="reply-info">
+                    <span>Replying to {{ replyingTo.sender }}</span>
+                    <button @click="cancelReply" class="cancel-reply">×</button>
+                </div>
+                <div class="reply-preview">
+                    {{ replyingTo.content.length > 50 ? replyingTo.content.substring(0, 50) + '...' : replyingTo.content }}
                 </div>
             </div>
             <div class="message-input">
@@ -224,7 +251,6 @@ setInterval(() => {
 
 .chat-container {
     width: 95%;
-    /* max-width: 800px; */
     display: flex;
     flex-direction: column;
     height: 95vh;
@@ -281,20 +307,69 @@ setInterval(() => {
     background: #1a1a1a;
     color: #fff;
     border-left: 3px solid #d10000;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.message:hover {
+    background: #252525;
+}
+
+.reply-preview {
+    background: #2a2a2a;
+    border-left: 3px solid #ff6666;
+    padding: 5px 10px;
+    margin-bottom: 8px;
+    border-radius: 3px;
+    font-size: 0.9rem;
+    color: #aaa;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    position: relative;
+    padding-left: 15px;
+}
+
+.reply-preview::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ff6666;
+}
+
+.reply-sender {
+    font-weight: bold;
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+}
+
+.reply-content {
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sender {
     font-weight: bold;
     color: #ff4444;
     letter-spacing: 0.1rem;
-
+    margin-bottom: 5px;
 }
 
 .message-content {
     font-size: 1rem;
     color: #ddd;
     font-size: 2rem;
+    margin-bottom: 5px;
+}
 
+.reply-message {
+    border-left: 4px solid #ff6666;
+    padding-left: 10px;
+    margin-left: -10px;
 }
 
 .special-message {
@@ -306,6 +381,39 @@ setInterval(() => {
 .timestamp {
     font-size: 0.8rem;
     color: #777;
+    text-align: right;
+}
+
+.reply-indicator {
+    background: #2a2a2a;
+    padding: 8px 15px;
+    border-left: 3px solid #ff6666;
+    margin-bottom: 10px;
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+}
+
+.reply-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #ff6666;
+    margin-bottom: 5px;
+}
+
+.cancel-reply {
+    background: none;
+    border: none;
+    color: #ff6666;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.cancel-reply:hover {
+    color: #ff3333;
 }
 
 .message-input {
@@ -325,7 +433,8 @@ textarea {
     font-family: inherit;
     font-size: 1rem;
     letter-spacing: 2px;
-
+    min-height: 60px;
+    resize: none;
 }
 
 .send-button {

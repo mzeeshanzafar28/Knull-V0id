@@ -41,7 +41,7 @@ return new class extends Migration
         DB::table('users')->insertOrIgnore([
             [
                 'name' => 'generalzodx28',
-                'email' => 'generalzodx28@gmail.com',
+                'email' => 'generalzodx2811@gmail.com',
                 'password' => Hash::make('SuperSecurePass123'),
                 'created_at' => now(),
                 'updated_at' => now(),
