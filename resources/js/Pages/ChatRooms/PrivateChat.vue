@@ -73,13 +73,20 @@ const scrollToBottom = () => {
 };
 
 onMounted(async () => {
+
+    if (!chat.value?.id) {
+        error.value = 'Chat session failed to initialize';
+        loading.value = false;
+        return;
+    }
+
     window.Echo.private(`chat.${chat.value.id}`)
         .listen('PrivateMessageSent', evt => {
             messages.value.push({
-                id: evt.message.id,
-                sender: evt.message.sender_name,
-                content: evt.message.content, // Changed from message.content
-                created_at: evt.message.created_at
+                id: evt.id,
+                sender: evt.sender_name,
+                content: evt.content,
+                created_at: evt.created_at
             });
             playSound('message_received');
             scrollToBottom();

@@ -31,14 +31,11 @@ class PrivateMessageSent implements ShouldBroadcast {
 
     public function broadcastWith() {
         return [
-            'message' => [
-                'id' => $this->messageId,
-                'chat_id' => $this->chatId,
-                'sender_name' => $this->senderName,
-                'content' => $this->decryptedMessage,
-                'encrypted_message' => $this->encryptedMessage,
-                'created_at' => now()->toDateTimeString()
-            ]
+            'id' => $this->messageId,
+            'chat_id' => $this->chatId,
+            'content' => $this->decryptedMessage,
+            'sender_name' => $this->senderName,
+            'created_at' => now()->toISOString()
         ];
     }
 }

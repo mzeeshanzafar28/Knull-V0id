@@ -21,6 +21,7 @@ return new class extends Migration
                   ->cascadeOnDelete();
             $table->timestamp('created_at')
                   ->useCurrent();
+
         });
     }
 

@@ -13,22 +13,24 @@ class PrivateChatController extends Controller
 {
     public function createChat($name)
     {
-        $target = User::where('name', $name)->firstOrFail();
-        $me = auth()->id();
-        $them = $target->id;
+        try {
+            $target = User::where('name', $name)->firstOrFail();
+            $me = auth()->id();
+            $them = $target->id;
 
-        $userOne = min($me, $them);
-        $userTwo = max($me, $them);
+            $chat = PrivateChat::firstOrCreate([
+                'user_one_id' => min($me, $them),
+                'user_two_id' => max($me, $them)
+            ]);
 
-        $chat = PrivateChat::firstOrCreate([
-            'user_one_id' => $userOne,
-            'user_two_id' => $userTwo,
-        ]);
+            return Inertia::render('ChatRooms/PrivateChat', [
+                'chat' => $chat->load(['userOne', 'userTwo']),
+                'otherUser' => $target
+            ]);
 
-        return Inertia::render('ChatRooms/PrivateChat', [
-            'chat' => $chat,
-            'otherUser' => $target,
-        ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to start chat');
+        }
     }
 
     public function sendMessage(Request $request)
@@ -78,6 +80,10 @@ class PrivateChatController extends Controller
         ->orderBy('created_at', 'asc')
         ->get();
 
+        PrivateMessage::where('chat_id', $chatId)
+        ->whereNull('read_at')
+        ->update(['read_at' => now()]);
+
         $decryptedMessages = $messages->map(function ($msg) {
             $response = Http::withoutVerifying()->post('https://127.0.0.1:5000/decrypt', [
                 'kyber_ciphertext' => $msg->kyber_ciphertext,
@@ -116,18 +122,22 @@ class PrivateChatController extends Controller
     ->map(function($chat) use ($user) {
         $otherUser = $chat->user_one_id === $user->id ? $chat->userTwo : $chat->userOne;
 
-        return [
-            'id' => $chat->id,
-            'other_user' => [
-                'id' => $otherUser->id,
-                'name' => $otherUser->name
-            ],
-            'last_message' => $chat->messages->first() ? [
-                'content' => $chat->messages->first()->content,
-                'created_at' => $chat->messages->first()->created_at
-            ] : null,
-            'updated_at' => $chat->updated_at
-        ];
+return [
+    'id' => $chat->id,
+    'other_user' => [
+        'id' => $otherUser->id,
+        'name' => $otherUser->name
+    ],
+    'last_message' => $chat->messages->first() ? [
+        'content' => $chat->messages->first()->content,
+        'created_at' => $chat->messages->first()->created_at
+    ] : null,
+    'updated_at' => $chat->updated_at ?? $chat->created_at,
+    'unread_count' => $chat->messages()
+        ->where('sender_id', '!=', $user->id)
+        ->whereNull('read_at')
+        ->count()
+];
 
     });
 

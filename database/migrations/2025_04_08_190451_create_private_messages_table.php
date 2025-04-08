@@ -24,6 +24,8 @@ return new class extends Migration
             $table->text('kyber_ciphertext');
             $table->timestamp('created_at')
                   ->useCurrent();
+            $table->timestamp('read_at')->nullable();
+
         });
     }
 

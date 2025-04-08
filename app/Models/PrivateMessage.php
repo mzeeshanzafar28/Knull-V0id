@@ -17,6 +17,10 @@ class PrivateMessage extends Model {
         'kyber_ciphertext'
     ];
 
+    protected $casts = [
+        'read_at' => 'datetime',
+    ];
+
     public function chat(): BelongsTo {
         return $this->belongsTo( PrivateChat::class, 'chat_id' );
     }
