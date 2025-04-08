@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\PrivateChatController;
 use App\Http\Controllers\FileController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -63,6 +64,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/chat/{roomId}/messages', [ChatController::class, 'fetchMessages']);
     Route::get('/chat/{roomId}/members', [ChatController::class, 'fetchMembers']);
     Route::post('/chat/{roomId}/leave', [ChatController::class, 'leaveRoom']);
+
+    //Private Chat Route
+    Route::get('/private/message/{name}', [PrivateChatController::class, 'createChat']);
+    Route::get('/private/get/{chatId}', [PrivateChatController::class, 'getMessages']);
+    Route::post('/private/message/send', [PrivateChatController::class, 'sendMessage']);
+
 
     // File Transfer Routes
     Route::get('/files', function () {

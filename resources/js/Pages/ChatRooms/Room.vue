@@ -15,10 +15,22 @@ const members = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const replyingTo = ref(null);
+const currentUser = ref(props.auth.user);
+const blockedUsers = ref([]);
+const selectedMessageId = ref(null);
 
 const senderColors = [
-    '#ff5733', '#33ff57', '#3357ff', '#ff33a1', '#a133ff', '#33fff6', '#ffc733', '#ff3333'
+    '#ff5733', '#33ff57', '#3357ff', '#ff33a1',
+    '#a133ff', '#33fff6', '#ffc733', '#ff3333'
 ];
+
+const filteredMessages = computed(() => {
+    return messages.value.filter(message => {
+        if (message.sender === currentUser.value.name) return true;
+        const blockEntry = blockedUsers.value.find(b => b.username === message.sender);
+        return !blockEntry || new Date(message.created_at) < blockEntry.blockedAt;
+    });
+});
 
 const getSenderColor = (sender) => {
     let hash = 0;
@@ -93,7 +105,38 @@ const findOriginalMessage = (messageId) => {
     return messages.value.find(m => m.id === messageId);
 };
 
+const toggleOptions = (messageId, event) => {
+    event.stopPropagation();
+    selectedMessageId.value = selectedMessageId.value === messageId ? null : messageId;
+};
+
+const sendPrivateMessage = (username) => {
+    Inertia.visit(`/private/message/${username}`);
+    selectedMessageId.value = null;
+};
+
+const toggleBlockUser = (username) => {
+    const existingIndex = blockedUsers.value.findIndex(b => b.username === username);
+    if (existingIndex > -1) {
+        blockedUsers.value.splice(existingIndex, 1);
+    } else {
+        blockedUsers.value.push({
+            username,
+            blockedAt: new Date()
+        });
+    }
+    selectedMessageId.value = null;
+};
+
+const isUserBlocked = (username) => {
+    return blockedUsers.value.some(b => b.username === username);
+};
+
 onMounted(async () => {
+    document.addEventListener('click', () => {
+        selectedMessageId.value = null;
+    });
+
     try {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
@@ -181,6 +224,7 @@ setInterval(() => {
 </script>
 
 <template>
+
     <Head :title="`Chat Room - ${room.name}`" />
     <div class="chat-room">
         <main class="chat-container">
@@ -197,19 +241,36 @@ setInterval(() => {
                 <div v-if="loading" class="loading">Summoning messages from the void...</div>
                 <div v-else-if="error" class="error">{{ error }}</div>
                 <div v-else>
-                    <div v-for="message in messages" :key="message.id" class="message" @dblclick="startReply(message)">
-                        <!-- Reply preview for replied messages -->
+                    <div v-for="message in filteredMessages" :key="message.id" class="message"
+                        @dblclick="startReply(message)">
+                        <div class="message-options" v-if="message.sender !== currentUser.name">
+                            <button @click.stop="toggleOptions(message.id, $event)" class="arrow-button">▼</button>
+                            <div v-if="selectedMessageId === message.id" class="options-dropdown">
+                                <button @click="sendPrivateMessage(message.sender)">Message</button>
+                                <button @click="toggleBlockUser(message.sender)">
+                                    {{ isUserBlocked(message.sender) ? 'Unblock' : 'Block' }}
+                                </button>
+                            </div>
+                        </div>
+
                         <div v-if="message.reply_to" class="reply-preview">
-                            <div class="reply-sender" :style="{ color: getSenderColor(findOriginalMessage(message.reply_to)?.sender || 'Unknown') }">
+                            <div class="reply-sender"
+                                :style="{ color: getSenderColor(findOriginalMessage(message.reply_to)?.sender || 'Unknown') }">
                                 {{ findOriginalMessage(message.reply_to)?.sender || 'Unknown' }}
                             </div>
                             <div class="reply-content">
                                 {{ findOriginalMessage(message.reply_to)?.content || 'Message not available' }}
                             </div>
                         </div>
-                        <div class="sender" :style="{ color: getSenderColor(message.sender) }">
+
+                        <!-- Updated sender div with conditional margin-left -->
+                        <div class="sender" :style="{
+                            color: getSenderColor(message.sender),
+                            marginLeft: message.sender !== currentUser.name ? '12px' : '0'
+                        }">
                             {{ message.sender }}
                         </div>
+
                         <div :class="['message-content', {
                             'special-message': message.content === 'Dust Cleared by Void',
                             'reply-message': message.reply_to
@@ -226,7 +287,10 @@ setInterval(() => {
                     <button @click="cancelReply" class="cancel-reply">×</button>
                 </div>
                 <div class="reply-preview">
-                    {{ replyingTo.content.length > 50 ? replyingTo.content.substring(0, 50) + '...' : replyingTo.content }}
+                    {{ replyingTo.content.length > 50
+                        ? replyingTo.content.substring(0, 50) + '...'
+                        : replyingTo.content
+                    }}
                 </div>
             </div>
             <div class="message-input">
@@ -309,6 +373,7 @@ setInterval(() => {
     border-left: 3px solid #d10000;
     cursor: pointer;
     transition: background 0.2s;
+    position: relative;
 }
 
 .message:hover {
@@ -360,9 +425,8 @@ setInterval(() => {
 }
 
 .message-content {
-    font-size: 1rem;
-    color: #ddd;
     font-size: 2rem;
+    color: #ddd;
     margin-bottom: 5px;
 }
 
@@ -453,5 +517,58 @@ textarea {
 .send-button:hover {
     background: #ff0000;
     box-shadow: 0 0 10px #ff0000;
+}
+
+.message-options {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    z-index: 1;
+}
+
+.arrow-button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0;
+}
+
+.options-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #1a1a1a;
+    border: 1px solid #d10000;
+    border-radius: 4px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 2;
+    min-width: 120px;
+}
+
+.options-dropdown button {
+    background: #333;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    text-align: left;
+    font-family: 'Creepster', cursive;
+}
+
+.options-dropdown button:hover {
+    background: #444;
+}
+
+@media (max-height: 600px) {
+    .options-dropdown {
+        bottom: 100%;
+        top: auto;
+    }
 }
 </style>
