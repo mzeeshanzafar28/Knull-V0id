@@ -101,4 +101,39 @@ class PrivateChatController extends Controller
 
         return response()->json($decryptedMessages);
     }
+
+    public function listChats()
+{
+    $user = auth()->user();
+    $chats = PrivateChat::with(['userOne', 'userTwo', 'messages' => function($query) {
+        $query->latest()->limit(1);
+    }])
+    ->where(function($query) use ($user) {
+        $query->where('user_one_id', $user->id)
+              ->orWhere('user_two_id', $user->id);
+    })
+    ->get()
+    ->map(function($chat) use ($user) {
+        $otherUser = $chat->user_one_id === $user->id ? $chat->userTwo : $chat->userOne;
+
+        return [
+            'id' => $chat->id,
+            'other_user' => [
+                'id' => $otherUser->id,
+                'name' => $otherUser->name
+            ],
+            'last_message' => $chat->messages->first() ? [
+                'content' => $chat->messages->first()->content,
+                'created_at' => $chat->messages->first()->created_at
+            ] : null,
+            'updated_at' => $chat->updated_at
+        ];
+
+    });
+
+    return response()->json($chats);
+
+}
+
+
 }

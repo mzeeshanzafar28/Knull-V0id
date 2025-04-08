@@ -70,6 +70,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/private/get/{chatId}', [PrivateChatController::class, 'getMessages']);
     Route::post('/private/message/send', [PrivateChatController::class, 'sendMessage']);
 
+    Route::get('/inbox', function () {
+        return Inertia::render('Inbox');
+    });
+    Route::post('/inbox', [PrivateChatController::class, 'listChats']);
+
 
     // File Transfer Routes
     Route::get('/files', function () {

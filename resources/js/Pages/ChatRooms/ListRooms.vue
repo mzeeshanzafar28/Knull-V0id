@@ -4,6 +4,7 @@ import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { Inertia } from '@inertiajs/inertia';
 import { playSound } from '@/utils/sounds';
+import { Link } from '@inertiajs/vue3';
 
 const { props } = usePage();
 const rooms = ref([]);
@@ -13,6 +14,7 @@ const flashError = ref(props.flash.error || '');
 
 const zodRoom = computed(() => rooms.value.find(r => r.name === 'The crown of Zod'));
 const otherRooms = computed(() => rooms.value.filter(r => r.name !== 'The crown of Zod'));
+const isFaLoaded = ref(false);
 
 onMounted(async () => {
     playSound('list_rooms');
@@ -57,22 +59,39 @@ async function joinRoom(roomId) {
 </script>
 
 <template>
+
     <Head title="Chat Rooms - The Void" />
     <div class="min-h-screen bg-void-black relative overflow-hidden">
         <div class="absolute inset-0 bg-[url('/images/static-noise.gif')] opacity-10 z-0"></div>
         <div class="absolute inset-0 opacity-20 z-0">
             <div v-for="i in 30" :key="i" class="absolute text-4xl opacity-30 animate-float"
-                 :style="{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 5}s` }">
+                :style="{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 5}s` }">
                 ☠️⚰️👻💀
             </div>
         </div>
         <main class="relative z-10 container mx-auto px-4 py-12">
+
+            <Link href="/inbox"
+                class="fixed top-6 right-6 text-blood-red hover:text-blood-red/80 transition-colors z-50">
+            <!-- Always show SVG fallback -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+
+            <!-- Show Font Awesome icon only if loaded -->
+            <i v-if="isFaLoaded" class="fas fa-inbox text-3xl animate-pulse" aria-hidden="true"></i>
+            <span class="sr-only">Private Messages</span>
+            </Link>
+
             <h1 class="text-5xl font-creepster text-blood-red mb-8 text-center animate-glitch">
                 Chambers of the Damned
             </h1>
 
-           <!-- Display flash error if available -->
-            <div v-if="flashError" class="mb-4 p-4 bg-red-100 text-red-700 rounded flex justify-center items-center text-center">
+            <!-- Display flash error if available -->
+            <div v-if="flashError"
+                class="mb-4 p-4 bg-red-100 text-red-700 rounded flex justify-center items-center text-center">
                 <p>{{ flashError }}</p>
             </div>
 
