@@ -8,6 +8,8 @@ use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
+
 
 class ChatController extends Controller
 {
@@ -85,44 +87,77 @@ class ChatController extends Controller
      */
     public function sendMessage(Request $request, $roomId)
     {
-        $validated = $request->validate([
-            'message' => 'required|string'
-        ]);
+        try {
+            $validated = $request->validate([
+                'message' => 'nullable|string',
+                'media' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,mp4,mov,avi,webm|max:25600'
+            ]);
 
-        $room = ChatRoom::findOrFail($roomId);
+            $room = ChatRoom::findOrFail($roomId);
+            $mediaPath = null;
+            $mediaType = null;
+            $messageContent = $validated['message'] ?? 'Media shared';
 
-        // Encrypt message via Python microservice
-        $encryptionResponse = Http::withoutVerifying()->post('https://127.0.0.1:5000/encrypt', [
-            'message' => $validated['message']
-        ]);
+            if ($request->hasFile('media')) {
+                $file = $request->file('media');
+                $mediaPath = $file->store('chat_media', 'public');
+                $mediaType = $file->getMimeType();
 
+                // If media is uploaded, override any text message
+                $messageContent = 'Media shared';
+            }
 
-        if ($encryptionResponse->failed()) {
-            return response()->json(['error' => 'Encryption failed'], 500);
+            // Only encrypt if there's a text message
+            $encryptedMessage = null;
+            $iv = null;
+            $kyber_ciphertext = null;
+
+            if (!empty($messageContent)) {
+                $encryptionResponse = Http::withoutVerifying()->post('https://127.0.0.1:5000/encrypt', [
+                    'message' => $messageContent
+                ]);
+
+                if ($encryptionResponse->failed()) {
+                    throw new \Exception('Message encryption failed');
+                }
+
+                $encryptedData = $encryptionResponse->json();
+                $encryptedMessage = $encryptedData['encrypted_message'];
+                $iv = $encryptedData['iv'];
+                $kyber_ciphertext = $encryptedData['kyber_ciphertext'];
+            }
+
+            $message = ChatMessage::create([
+                'chat_room_id' => $roomId,
+                'user_id' => auth()->id(),
+                'encrypted_message' => $encryptedMessage,
+                'kyber_ciphertext' => $kyber_ciphertext,
+                'iv' => $iv,
+                'sender' => auth()->user()->name,
+                'media_path' => $mediaPath,
+                'media_type' => $mediaType
+            ]);
+
+            event(new NewChatMessage(
+                $roomId,
+                $encryptedMessage,
+                $messageContent,
+                auth()->user()->name,
+                $mediaPath,
+                $mediaType
+            ));
+
+            return response()->json([
+                'status' => 'Message sent',
+                'sender' => auth()->user()->name,
+                'media_path' => $mediaPath
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Media upload failed: ' . $e->getMessage()
+            ], 500);
         }
-
-        $encryptedData = $encryptionResponse->json();
-        $encryptedMessage = $encryptedData['encrypted_message'];
-        $iv = $encryptedData['iv'];
-        $kyber_ciphertext = $encryptedData['kyber_ciphertext'];
-
-        // Store encrypted message in the database
-        $message = ChatMessage::create([
-            'chat_room_id'     => $roomId,
-            'user_id'          => auth()->id(),
-            'encrypted_message'=> $encryptedMessage,
-            'kyber_ciphertext' => $kyber_ciphertext,
-            'iv'               => $iv,
-            'sender'           => auth()->user()->name,
-        ]);
-
-        // Broadcast the encrypted message to the room
-
-        event(new NewChatMessage($roomId, $encryptedMessage,$validated['message']  , auth()->user()->name));
-        // NewChatMessage::dispatch($roomId, $encryptedMessage, auth()->user()->name);
-
-
-        return response()->json(['status' => 'Message sent', 'sender' => auth()->user()->name]);
     }
 
     /**

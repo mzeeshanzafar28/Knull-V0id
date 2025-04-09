@@ -16,12 +16,16 @@ class NewChatMessage implements ShouldBroadcast {
     public $encryptedMessage;
     public $plainMessage;
     public $sender;
+    public $mediaPath;
+    public $mediaType;
 
-    public function __construct( $roomId, $encryptedMessage, $plainMessage, $sender ) {
+    public function __construct( $roomId, $encryptedMessage, $plainMessage, $sender, $mediaPath = null, $mediaType = null ) {
         $this->roomId = $roomId;
         $this->encryptedMessage = $encryptedMessage;
         $this->plainMessage = $plainMessage;
         $this->sender = $sender;
+        $this->mediaPath = $mediaPath;
+        $this->mediaType = $mediaType;
     }
 
     public function broadcastOn() {
@@ -32,7 +36,9 @@ class NewChatMessage implements ShouldBroadcast {
         return [
             'message'   => $this->plainMessage,
             'sender'    => $this->sender,
-            'timestamp' => now()->toISOString()
+            'timestamp' => now()->toISOString(),
+            'media_path' => $this->mediaPath,
+            'media_type' => $this->mediaType
         ];
     }
 

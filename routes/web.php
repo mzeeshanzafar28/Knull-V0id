@@ -8,6 +8,8 @@ use App\Http\Controllers\PrivateChatController;
 use App\Http\Controllers\FileController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
 
 // Route::get('/session-test', function () {
 //     session(['test' => 'Session is working']);
@@ -64,6 +66,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/chat/{roomId}/messages', [ChatController::class, 'fetchMessages']);
     Route::get('/chat/{roomId}/members', [ChatController::class, 'fetchMembers']);
     Route::post('/chat/{roomId}/leave', [ChatController::class, 'leaveRoom']);
+
+    //Media Download Route
+    Route::get('/media/{filename}', function ($filename) {
+        $path = storage_path('app/public/chat_media/' . $filename);
+
+        if (!Storage::exists('public/chat_media/' . $filename)) {
+            abort(404);
+        }
+
+        return response()->file($path);
+    })->name('media.view');
 
     //Private Chat Route
     Route::get('/private/message/{name}', [PrivateChatController::class, 'createChat']);

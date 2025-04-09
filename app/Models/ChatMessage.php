@@ -12,6 +12,9 @@ class ChatMessage extends Model {
         'kyber_ciphertext',
         'iv',
         'sender',
+        'media_path',
+        'media_type'
+
     ];
 
     public function room() {

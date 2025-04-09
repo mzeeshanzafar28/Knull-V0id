@@ -18,6 +18,8 @@ const replyingTo = ref(null);
 const currentUser = ref(props.auth.user);
 const blockedUsers = ref([]);
 const selectedMessageId = ref(null);
+const mediaInput = ref(null);
+
 
 const senderColors = [
     '#ff5733', '#33ff57', '#3357ff', '#ff33a1',
@@ -54,6 +56,49 @@ const sendMessage = async () => {
         console.error('Failed to send message:', err);
     }
 };
+
+const handleMediaUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('media', file);
+    formData.append('message', 'Media shared');
+
+    try {
+        await axios.post(`/chat/${roomId.value}/send`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+    } catch (error) {
+        let errorMessage = 'Failed to share media';
+
+        // Handle validation errors
+        if (error.response?.status === 422) {
+            errorMessage = error.response.data?.errors?.media?.[0] ||
+                'Invalid file type or format';
+        }
+        // Handle payload too large
+        else if (error.response?.status === 413) {
+            errorMessage = 'Media file is too large (max 25MB)';
+        }
+        // Handle network errors
+        else if (!error.response) {
+            errorMessage = 'Network error - check your connection';
+        }
+
+        alert(`Media upload failed: ${errorMessage}`);
+        console.error('Media upload error:', error.response?.data || error);
+    } finally {
+        mediaInput.value.value = null;
+    }
+};
+
+const triggerMediaUpload = () => {
+    mediaInput.value.click();
+};
+
 
 const fetchMessages = async () => {
     try {
@@ -192,7 +237,9 @@ onMounted(async () => {
                     content: data.message,
                     sender: data.sender,
                     created_at: data.timestamp,
-                    reply_to: data.reply_to
+                    reply_to: data.reply_to,
+                    media_path: data.media_path,
+                    media_type: data.media_type
                 });
                 playSound('message_received');
                 scrollToBottom();
@@ -275,8 +322,20 @@ setInterval(() => {
                             'special-message': message.content === 'Dust Cleared by Void',
                             'reply-message': message.reply_to
                         }]">
+                            <div v-if="message.media_path" class="media-container">
+                                <img v-if="message.media_type.startsWith('image')"
+                                    :src="`/storage/${message.media_path}`" class="chat-media" alt="Shared media">
+                                <video v-else-if="message.media_type.startsWith('video')" controls class="chat-media">
+                                    <source :src="`/storage/${message.media_path}`" :type="message.media_type">
+                                </video>
+                                <div v-else class="unsupported-media">
+                                    <i class="fas fa-file-download"></i>
+                                    <span>Unsupported media type</span>
+                                </div>
+                            </div>
                             {{ message.content }}
                         </div>
+
                         <div class="timestamp">{{ new Date(message.created_at).toLocaleTimeString() }}</div>
                     </div>
                 </div>
@@ -293,6 +352,29 @@ setInterval(() => {
                     }}
                 </div>
             </div>
+
+            <div class="media-controls">
+                <input type="file" id="media-upload" ref="mediaInput" hidden @change="handleMediaUpload"
+                    accept="image/*, video/*">
+                <button class="media-button" @click="triggerMediaUpload">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                        <circle cx="12" cy="13" r="4" />
+                    </svg>
+                </button>
+                <button class="media-button" @click="Inertia.visit('/files/upload')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                </button>
+            </div>
+
+
+
             <div class="message-input">
                 <textarea v-model="newMessage" placeholder="Whisper into the void..."
                     @keydown.enter.exact.prevent="sendMessage" @keydown.shift.enter="addNewLine"></textarea>
@@ -570,5 +652,54 @@ textarea {
         bottom: 100%;
         top: auto;
     }
+}
+
+.media-controls {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+}
+
+.media-button {
+    background: none;
+    border: none;
+    color: #d10000;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.media-button:hover {
+    color: #ff0000;
+}
+
+.chat-media {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+}
+
+.unsupported-media {
+    padding: 10px;
+    background: #2a2a2a;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.unsupported-media i {
+    font-size: 1.2rem;
+}
+
+.media-button svg {
+    width: 24px;
+    height: 24px;
+    transition: stroke 0.3s ease;
+}
+
+.media-button:hover svg {
+    stroke: #ff0000;
 }
 </style>

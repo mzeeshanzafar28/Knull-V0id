@@ -16,6 +16,8 @@ return new class extends Migration
             $table->text('kyber_ciphertext');
             $table->string('iv');
             $table->string('sender');
+            $table->string('media_path')->nullable();
+            $table->string('media_type')->nullable();
             $table->timestamps();
         });
     }
