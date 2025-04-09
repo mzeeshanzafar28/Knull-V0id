@@ -87,6 +87,7 @@ const toggleMobileMenu = () => {
 
 <template>
     <div>
+
         <Head :title="title" />
         <Banner />
 
@@ -101,9 +102,10 @@ const toggleMobileMenu = () => {
                         <div class="flex">
                             <div class="shrink-0 flex items-center">
                                 <Link :href="route('dashboard')">
-                                    <span class="text-2xl font-creepster text-blood-red animate__animated animate__rubberBand">
-                                        Knull Void
-                                    </span>
+                                <span
+                                    class="text-2xl font-creepster text-blood-red animate__animated animate__rubberBand">
+                                    Knull Void
+                                </span>
                                 </Link>
                             </div>
 
@@ -138,12 +140,14 @@ const toggleMobileMenu = () => {
 
                                     <template #content>
                                         <div class="w-60 bg-black/90 border border-blood-red/50 backdrop-blur-sm"
-                                        @mouseenter="showTeamsDropdown = true"
-                                        @mouseleave="showTeamsDropdown = false">
-                                            <div ref="teamsDropdownRef" class="block px-4 py-2 text-xs text-blood-red font-creepster">
+                                            @mouseenter="showTeamsDropdown = true"
+                                            @mouseleave="showTeamsDropdown = false">
+                                            <div ref="teamsDropdownRef"
+                                                class="block px-4 py-2 text-xs text-blood-red font-creepster">
                                                 Coven Management
                                             </div>
-                                            <DropdownLink :href="route('teams.show', $page.props.auth.user.current_team)"
+                                            <DropdownLink
+                                                :href="route('teams.show', $page.props.auth.user.current_team)"
                                                 class="hover:bg-blood-red/10 text-ghost-white font-im-fell">
                                                 Coven Rituals
                                             </DropdownLink>
@@ -158,10 +162,12 @@ const toggleMobileMenu = () => {
                                                 <div class="block px-4 py-2 text-xs text-blood-red font-creepster">
                                                     Switch Covens
                                                 </div>
-                                                <template v-for="team in $page.props.auth.user.all_teams" :key="team.id">
+                                                <template v-for="team in $page.props.auth.user.all_teams"
+                                                    :key="team.id">
                                                     <form @submit.prevent="switchToTeam(team)">
                                                         <DropdownLink as="button" class="hover:bg-blood-red/10">
-                                                            <div class="flex items-center font-im-fell text-ghost-white">
+                                                            <div
+                                                                class="flex items-center font-im-fell text-ghost-white">
                                                                 <svg v-if="team.id == $page.props.auth.user.current_team_id"
                                                                     class="me-2 size-5 text-blood-red"
                                                                     xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -196,7 +202,7 @@ const toggleMobileMenu = () => {
                                             <button type="button"
                                                 class="inline-flex items-center px-3 py-2 border border-blood-red text-sm leading-4 font-im-fell rounded-md text-ghost-white bg-black/30 hover:bg-blood-red/20 transition-colors"
                                                 @mouseenter="showSettingsDropdown = true"
-                                            @mouseleave="showSettingsDropdown = false">
+                                                @mouseleave="showSettingsDropdown = false">
                                                 {{ $page.props.auth.user.name }}
                                                 <svg class="ms-2 -me-0.5 size-4 text-blood-red"
                                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -209,10 +215,11 @@ const toggleMobileMenu = () => {
                                     </template>
 
                                     <template #content>
-                                        <div ref="settingsDropdownRef" class="bg-black/90 border border-blood-red/50 backdrop-blur-sm"
-                                        @mouseenter="showSettingsDropdown = true"
-                                        @mouseleave="showSettingsDropdown = false">
-                                        <div class="block px-4 py-2 text-xs text-blood-red font-creepster">
+                                        <div ref="settingsDropdownRef"
+                                            class="bg-black/90 border border-blood-red/50 backdrop-blur-sm"
+                                            @mouseenter="showSettingsDropdown = true"
+                                            @mouseleave="showSettingsDropdown = false">
+                                            <div class="block px-4 py-2 text-xs text-blood-red font-creepster">
                                                 Soul Management
                                             </div>
                                             <DropdownLink :href="route('profile.show')"

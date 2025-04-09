@@ -29,7 +29,7 @@ function playHoverSound() {
     const door = event.currentTarget;
     door.classList.add('hide-elements');
 
-}function showElements() {
+} function showElements() {
     const door = event.currentTarget;
     door.classList.remove('hide-elements');
 }
@@ -54,7 +54,8 @@ onMounted(async () => {
         <div class="blood-drips"></div>
 
         <div class="flex gap-16 z-10 relative">
-            <div class="castle-door blood-door" @click="openDoor('/chat-rooms')" @mouseenter="playHoverSound" @mouseleave="showElements">
+            <div class="castle-door blood-door" @click="openDoor('/chat-rooms')" @mouseenter="playHoverSound"
+                @mouseleave="showElements">
                 <div class="door-left"></div>
                 <div class="door-right"></div>
                 <div class="door-knocker">
@@ -74,7 +75,8 @@ onMounted(async () => {
                 </div>
             </div>
 
-            <div class="castle-door void-door" @click="openDoor('/files')" @mouseenter="playHoverSound" @mouseleave="showElements">
+            <div class="castle-door void-door" @click="openDoor('/files')" @mouseenter="playHoverSound"
+                @mouseleave="showElements">
                 <div class="door-left"></div>
                 <div class="door-right"></div>
                 <div class="door-knocker">
@@ -100,10 +102,6 @@ onMounted(async () => {
 </template>
 
 <style>
-body {
-    /* overflow-y: auto !important; */
-}
-
 .castle-door {
     width: 400px;
     height: 800px;
@@ -407,6 +405,4 @@ body {
 html {
     overflow-y: auto !important;
 }
-
 </style>
-
