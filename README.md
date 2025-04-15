@@ -117,10 +117,10 @@ This hell is solo-built by *Me | Muhammad Zeeshan Zafar* 🔥 but pull requests 
 ### 1️⃣ **Initial Setup**
 
 1. **Clone the Repository**
-2. Run `composer install`  *(Ensure Composer is installed)*
-3. Run `npm install`  *(Ensure Node.js & npm are installed)*
+2. Run `composer install`  *(Ensure Composer is installed && run first time only)*
+3. Run `npm install`  *(Ensure Node.js & npm are installed && run first time only)*
 4. Configure your `.env` file and set up MySQL (⚠️ Avoid Apache port 8080)
-5. Run `php artisan migrate`
+5. Run `php artisan migrate` (run first time only)
 6. Start the Laravel server:  
    ```sh
    php artisan serve --host=0.0.0.0 --port=8001
@@ -204,7 +204,7 @@ This hell is solo-built by *Me | Muhammad Zeeshan Zafar* 🔥 but pull requests 
 
 ---
 
-## 🕵️‍♂️ LOCAL HTTPS / Nginx SETUP (Linux)  
+## 🕵️‍♂️ LOCAL HTTPS / Nginx SETUP for Linux (Optional)    
 
 Follow these steps to host **Knull-V0id** **over HTTPS on your local server**:  
 
@@ -333,6 +333,8 @@ Follow these steps to host **Knull-V0id** on the **Tor/Onion Network**:
      HiddenServiceDir /var/lib/tor/hidden_service/
      HiddenServicePort 80 127.0.0.1:8001
      HiddenServicePort 5173 127.0.0.1:5173
+     HiddenServicePort 8080 127.0.0.1:8080
+
      ```
 
 5. **Restart Tor Service:**  
