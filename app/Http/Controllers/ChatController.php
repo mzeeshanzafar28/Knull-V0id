@@ -104,7 +104,7 @@ class ChatController extends Controller
                 $mediaType = $file->getMimeType();
 
                 // If media is uploaded, override any text message
-                $messageContent = 'Media shared';
+                $messageContent = '';
             }
 
             // Only encrypt if there's a text message

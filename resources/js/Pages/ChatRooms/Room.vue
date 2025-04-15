@@ -268,6 +268,7 @@ onMounted(async () => {
 setInterval(() => {
     fetchMembers();
 }, 2000);
+
 </script>
 
 <template>
@@ -324,12 +325,8 @@ setInterval(() => {
                         }]">
                             <div v-if="message.media_path" class="media-container">
                                 <img v-if="message.media_type.startsWith('image')"
-                                    :src="`/storage/${message.media_path}`" 
-                                    class="chat-media" 
-                                    alt="Shared media">
-                                <video v-else-if="message.media_type.startsWith('video')" 
-                                    controls 
-                                    class="chat-media">
+                                    :src="`/storage/${message.media_path}`" class="chat-media" alt="Shared media">
+                                <video v-else-if="message.media_type.startsWith('video')" controls class="chat-media">
                                     <source :src="`/storage/${message.media_path}`" :type="message.media_type">
                                 </video>
                                 <div v-else class="unsupported-media">

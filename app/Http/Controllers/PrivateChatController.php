@@ -35,76 +35,115 @@ class PrivateChatController extends Controller
 
     public function sendMessage(Request $request)
     {
-        $validated = $request->validate([
-            'message' => 'required|string',
-            'chat_id' => 'required|integer'
-        ]);
-
-        // Encrypt message via Python microservice
-        $encryptionResponse = Http::withoutVerifying()->post('https://127.0.0.1:5000/encrypt', [
-            'message' => $validated['message']
-        ]);
-
-        if ($encryptionResponse->failed()) {
-            return response()->json(['error' => 'Encryption failed'], 500);
+        try {
+            $validated = $request->validate([
+                'message' => 'nullable|string',
+                'chat_id' => 'required|integer',
+                'media' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,mov,avi,webm|max:25600'
+            ]);
+    
+            $mediaPath = null;
+            $mediaType = null;
+            $messageContent = $validated['message'] ?? '';
+    
+            if ($request->hasFile('media')) {
+                $file = $request->file('media');
+                $mediaPath = $file->store('private_media', 'public');
+                $mediaType = $file->getMimeType();
+            }
+    
+            $encryptedMessage = '';
+            $iv = '';
+            $kyber_ciphertext = '';
+    
+            if (!empty($messageContent)) {
+                $encryptionResponse = Http::withoutVerifying()->post('https://127.0.0.1:5000/encrypt', [
+                    'message' => $messageContent
+                ]);
+    
+                if ($encryptionResponse->failed()) {
+                    throw new \Exception('Message encryption failed');
+                }
+    
+                $encryptedData = $encryptionResponse->json();
+                $encryptedMessage = $encryptedData['encrypted_message'];
+                $iv = $encryptedData['iv'];
+                $kyber_ciphertext = $encryptedData['kyber_ciphertext'];
+            }
+    
+            $message = new PrivateMessage();
+            $message->chat_id = $validated['chat_id'];
+            $message->sender_id = auth()->id();
+            $message->encrypted_message = $encryptedMessage;
+            $message->iv = $iv;
+            $message->kyber_ciphertext = $kyber_ciphertext;
+            $message->media_path = $mediaPath;
+            $message->media_type = $mediaType;
+            $message->save();
+    
+            broadcast(new \App\Events\PrivateMessageSent(
+                $message->id,
+                $message->chat_id,
+                $encryptedMessage,
+                $messageContent, // Use the actual content that was encrypted
+                auth()->user()->name,
+                $mediaPath,
+                $mediaType
+            ))->toOthers();
+    
+            return response()->json($message);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Message sending failed: ' . $e->getMessage()
+            ], 500);
         }
-
-        $encryptedData = $encryptionResponse->json();
-        $encryptedMessage = $encryptedData['encrypted_message'];
-        $iv = $encryptedData['iv'];
-        $kyberCiphertext = $encryptedData['kyber_ciphertext'];
-
-        $message = new PrivateMessage();
-        $message->chat_id = $validated['chat_id'];
-        $message->sender_id = auth()->id();
-        $message->encrypted_message = $encryptedMessage;
-        $message->iv = $iv;
-        $message->kyber_ciphertext = $kyberCiphertext;
-        $message->save();
-
-        broadcast(new \App\Events\PrivateMessageSent(
-            $message->id,
-            $message->chat_id,
-            $encryptedMessage,
-            $validated['message'],
-            auth()->user()->name
-        ))->toOthers();
-
-        return response()->json($message);
     }
 
     public function getMessages($chatId)
     {
-        $messages = PrivateMessage::with('sender') // Eager load sender relationship
-        ->where('chat_id', $chatId)
-        ->orderBy('created_at', 'asc')
-        ->get();
-
-        PrivateMessage::where('chat_id', $chatId)
-        ->whereNull('read_at')
-        ->update(['read_at' => now()]);
-
+        $messages = PrivateMessage::with('sender')
+            ->where('chat_id', $chatId)
+            ->orderBy('created_at', 'asc')
+            ->get();
+    
         $decryptedMessages = $messages->map(function ($msg) {
-            $response = Http::withoutVerifying()->post('https://127.0.0.1:5000/decrypt', [
-                'kyber_ciphertext' => $msg->kyber_ciphertext,
-                'encrypted_message' => $msg->encrypted_message,
-                'iv' => $msg->iv,
-            ]);
-
-            $decryptedContent = $response->successful()
-                ? $response->json()['decrypted_message']
-                : 'Decryption failed';
-
+            // Handle media-only messages
+            if (empty($msg->encrypted_message) && !empty($msg->media_path)) {
                 return [
                     'id' => $msg->id,
-                    'chat_id' => $msg->chat_id,
-                    'sender_id' => $msg->sender_id,
-                    'sender_name' => $msg->sender->name, // Add sender name
-                    'content' => $decryptedContent,
+                    'sender_name' => $msg->sender->name,
+                    'content' => '', // No text content
+                    'media_path' => $msg->media_path,
+                    'media_type' => $msg->media_type,
                     'created_at' => $msg->created_at
                 ];
+            }
+    
+            // Only attempt decryption if encrypted content exists
+            $decryptedContent = 'Media shared'; // Default for media-only
+            if (!empty($msg->encrypted_message)) {
+                $response = Http::withoutVerifying()->post('https://127.0.0.1:5000/decrypt', [
+                    'kyber_ciphertext' => $msg->kyber_ciphertext,
+                    'encrypted_message' => $msg->encrypted_message,
+                    'iv' => $msg->iv,
+                ]);
+                
+                $decryptedContent = $response->successful() 
+                    ? $response->json()['decrypted_message']
+                    : 'Decryption failed';
+            }
+    
+            return [
+                'id' => $msg->id,
+                'sender_name' => $msg->sender->name,
+                'content' => $decryptedContent,
+                'media_path' => $msg->media_path,
+                'media_type' => $msg->media_type,
+                'created_at' => $msg->created_at
+            ];
         });
-
+    
         return response()->json($decryptedMessages);
     }
 

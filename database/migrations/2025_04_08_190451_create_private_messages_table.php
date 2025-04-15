@@ -25,6 +25,8 @@ return new class extends Migration
             $table->timestamp('created_at')
                   ->useCurrent();
             $table->timestamp('read_at')->nullable();
+            $table->string('media_path')->nullable();
+            $table->string('media_type')->nullable();
 
         });
     }

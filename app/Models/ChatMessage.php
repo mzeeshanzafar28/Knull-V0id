@@ -24,4 +24,15 @@ class ChatMessage extends Model {
     public function user() {
         return $this->belongsTo( User::class );
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($message) {
+            // Delete associated media when message is deleted
+            if ($message->media_path) {
+                Storage::disk('public')->delete($message->media_path);
+            }
+        });
+    }
+    
 }

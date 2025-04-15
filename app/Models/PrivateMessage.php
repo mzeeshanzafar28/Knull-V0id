@@ -14,7 +14,9 @@ class PrivateMessage extends Model {
         'sender_id',
         'encrypted_message',
         'iv',
-        'kyber_ciphertext'
+        'kyber_ciphertext',
+        'media_path',
+        'media_type'
     ];
 
     protected $casts = [
@@ -28,4 +30,13 @@ class PrivateMessage extends Model {
     public function sender(): BelongsTo {
         return $this->belongsTo( User::class, 'sender_id' );
     }
+
+    protected static function booted() {
+        static::deleting(function ($message) {
+            if ($message->media_path) {
+                Storage::disk('public')->delete($message->media_path);
+            }
+        });
+    }
+
 }

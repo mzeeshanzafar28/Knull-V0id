@@ -8,6 +8,7 @@ use App\Models\File;
 use App\Models\ChatRoom;
 use App\Models\ChatMessage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class Kernel extends ConsoleKernel
 {
@@ -16,28 +17,36 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
-        // Add your scheduled tasks here.
-
+        // Existing file cleanup
         $schedule->call(function () {
             File::where('expires_at', '<=', now())->delete();
         })->daily();
-
-
+    
+        // Enhanced ephemeral room cleanup
         $schedule->call(function () {
             $ephemeralRooms = ChatRoom::where('is_ephemeral', true)->get();
-
+    
             foreach ($ephemeralRooms as $room) {
                 $threshold = Carbon::now()->subHours($room->self_destruct_hours);
-
+                
+                // Get messages scheduled for deletion
+                $messages = ChatMessage::where('chat_room_id', $room->id)
+                    ->where('created_at', '<', $threshold)
+                    ->get();
+    
+                // Delete associated media files
+                foreach ($messages as $message) {
+                    if ($message->media_path) {
+                        Storage::disk('public')->delete($message->media_path);
+                    }
+                }
+    
+                // Delete messages
                 ChatMessage::where('chat_room_id', $room->id)
                     ->where('created_at', '<', $threshold)
                     ->delete();
-
             }
         })->everyFiveMinutes();
-
-
     }
 
 

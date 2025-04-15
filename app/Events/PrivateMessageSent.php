@@ -16,13 +16,17 @@ class PrivateMessageSent implements ShouldBroadcast {
     public $encryptedMessage;
     public $decryptedMessage;
     public $senderName;
+    public $mediaPath;
+    public $mediaType;
 
-    public function __construct( $messageId, $chatId, $encryptedMessage, $decryptedMessage, $senderName ) {
+    public function __construct( $messageId, $chatId, $encryptedMessage, $decryptedMessage, $senderName, $mediaPath, $mediaType ) {
         $this->messageId = $messageId;
         $this->chatId = $chatId;
         $this->encryptedMessage = $encryptedMessage;
         $this->decryptedMessage = $decryptedMessage;
         $this->senderName = $senderName;
+        $this->mediaPath = $mediaPath;
+        $this->mediaType = $mediaType;
     }
 
     public function broadcastOn() {
@@ -33,9 +37,11 @@ class PrivateMessageSent implements ShouldBroadcast {
         return [
             'id' => $this->messageId,
             'chat_id' => $this->chatId,
-            'content' => $this->decryptedMessage,
+            'content' => $this->decryptedMessage ?: '', // Empty string for media-only
             'sender_name' => $this->senderName,
-            'created_at' => now()->toISOString()
+            'created_at' => now()->toISOString(),
+            'media_path' => $this->mediaPath,
+            'media_type' => $this->mediaType
         ];
     }
 }

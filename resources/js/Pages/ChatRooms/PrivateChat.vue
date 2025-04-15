@@ -12,6 +12,7 @@ const messages = ref([]);
 const newMessage = ref('');
 const loading = ref(true);
 const error = ref(null);
+const mediaInput = ref(null);
 
 const currentUserName = computed(() => props.auth.user.name);
 
@@ -20,6 +21,7 @@ const senderColors = [
     '#ff33a1', '#a133ff', '#33fff6',
     '#ffc733', '#ff3333'
 ];
+
 const getSenderColor = sender => {
     let hash = 0;
     for (let i = 0; i < sender.length; i++) {
@@ -31,15 +33,15 @@ const getSenderColor = sender => {
 const fetchMessages = async () => {
     try {
         const { data } = await axios.get(`/private/get/${chat.value.id}`);
-        // Map the response data to match expected structure
         messages.value = data.map(msg => ({
             id: msg.id,
-            sender: msg.sender_name, // Use server-provided name
+            sender: msg.sender_name,
             content: msg.content,
-            created_at: msg.created_at
+            created_at: msg.created_at,
+            media_path: msg.media_path,
+            media_type: msg.media_type
         }));
     } catch (e) {
-        console.error(e);
         error.value = 'Failed to load messages';
     } finally {
         loading.value = false;
@@ -61,21 +63,49 @@ const sendMessage = async () => {
     }
 };
 
+const handleMediaUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('media', file);
+    formData.append('chat_id', chat.value.id);
+
+    try {
+        await axios.post('/private/message/send', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+    } catch (error) {
+        let errorMessage = 'Failed to share media';
+        if (error.response?.status === 422) {
+            errorMessage = error.response.data?.errors?.media?.[0] || 'Invalid file type';
+        } else if (error.response?.status === 413) {
+            errorMessage = 'File too large (max 25MB)';
+        } else if (!error.response) {
+            errorMessage = 'Network error';
+        }
+        alert(`Media upload failed: ${errorMessage}`);
+    } finally {
+        mediaInput.value.value = null;
+    }
+};
+
+const triggerMediaUpload = () => {
+    mediaInput.value.click();
+};
+
 const scrollToBottom = () => {
     nextTick(() => {
         const c = document.querySelector('#private-chat-container');
-        if (c) {
-            requestAnimationFrame(() => {
-                c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' });
-            });
-        }
+        if (c) c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' });
     });
 };
 
 onMounted(async () => {
-
     if (!chat.value?.id) {
-        error.value = 'Chat session failed to initialize';
+        error.value = 'Chat session failed';
         loading.value = false;
         return;
     }
@@ -86,7 +116,9 @@ onMounted(async () => {
                 id: evt.id,
                 sender: evt.sender_name,
                 content: evt.content,
-                created_at: evt.created_at
+                created_at: evt.created_at,
+                media_path: evt.media_path,
+                media_type: evt.media_type
             });
             playSound('message_received');
             scrollToBottom();
@@ -112,16 +144,43 @@ onMounted(async () => {
                 <div v-else>
                     <div v-for="msg in messages" :key="msg.id"
                         :class="['message', msg.sender === currentUserName ? 'mine' : 'theirs']">
-                        <div class="sender" :style="{
-                            color: getSenderColor(msg.sender),
-                            marginLeft: msg.sender === currentUserName ? '0' : '5px'
-                        }">
+                        <div class="sender" :style="{ color: getSenderColor(msg.sender) }">
                             {{ msg.sender }}
                         </div>
-                        <div class="message-content">{{ msg.content }}</div>
+                        <div class="message-content">
+                            <div v-if="msg.media_path" class="media-container">
+                                <img v-if="msg.media_type?.startsWith('image')" :src="`/storage/${msg.media_path}`"
+                                    class="chat-media" alt="Shared media">
+                                <video v-else-if="msg.media_type?.startsWith('video')" controls class="chat-media">
+                                    <source :src="`/storage/${msg.media_path}`" :type="msg.media_type">
+                                </video>
+                            </div>
+                            <span v-if="msg.content && msg.content !== 'Media shared'">
+                                {{ msg.content }}
+                            </span>
+                        </div>
                         <div class="timestamp">{{ new Date(msg.created_at).toLocaleTimeString() }}</div>
                     </div>
                 </div>
+            </div>
+
+            <div class="media-controls">
+                <input type="file" ref="mediaInput" hidden @change="handleMediaUpload" accept="image/*, video/*">
+                <button class="media-button" @click="triggerMediaUpload">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                        <circle cx="12" cy="13" r="4" />
+                    </svg>
+                </button>
+                <button class="media-button" @click="Inertia.visit('/files/upload')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                </button>
             </div>
 
             <div class="message-input">
@@ -155,7 +214,6 @@ onMounted(async () => {
     padding: 20px;
     border: 2px solid #d10000;
     box-shadow: 0 0 20px #d10000;
-    position: relative;
 }
 
 .room-header {
@@ -170,6 +228,7 @@ onMounted(async () => {
     background: #222;
     padding: 10px;
     border-radius: 5px;
+    margin-bottom: 10px;
 }
 
 .message {
@@ -202,6 +261,17 @@ onMounted(async () => {
     color: #ddd;
 }
 
+.media-container {
+    margin-bottom: 8px;
+}
+
+.chat-media {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 5px;
+    display: block;
+}
+
 .timestamp {
     font-size: 0.7rem;
     color: #777;
@@ -212,7 +282,6 @@ onMounted(async () => {
 .message-input {
     display: flex;
     gap: 10px;
-    margin-top: 10px;
 }
 
 textarea {
@@ -249,5 +318,35 @@ textarea {
     color: #aaa;
     text-align: center;
     margin-top: 20px;
+}
+
+.media-controls {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+}
+
+.media-button {
+    background: none;
+    border: none;
+    color: #d10000;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s;
+    padding: 5px;
+}
+
+.media-button:hover {
+    color: #ff0000;
+}
+
+.media-button svg {
+    width: 24px;
+    height: 24px;
+    transition: stroke 0.3s ease;
+}
+
+.media-button:hover svg {
+    stroke: #ff0000;
 }
 </style>
