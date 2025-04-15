@@ -351,7 +351,7 @@ Follow these steps to host **Knull-V0id** on the **Tor/Onion Network**:
    - This will print the **.onion** address for **Knull-Void**.
 
 7. **Update Environment Variables:**  
-   Edit your `.env` file and set:  
+   Edit your `.env` file and set the generated onion address from above step here:  
    ```ini
    APP_URL=http://xyzEXAMPLE123.onion
    VITE_APP_ONION_DOMAIN=xyzEXAMPLE123.onion

@@ -6,11 +6,13 @@ window.Pusher = Pusher;
 
 const csrfTokenElement = document.head.querySelector('meta[name="csrf-token"]');
 const csrfToken = csrfTokenElement ? csrfTokenElement.content : '';
+const onionDomain = import.meta.env.VITE_APP_ONION_DOMAIN;
+const reverbHost = import.meta.env.VITE_REVERB_HOST;
 
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
-    wsHost: import.meta.env.VITE_REVERB_HOST || '127.0.0.1',
+    wsHost: onionDomain ?? reverbHost,
     wsPort: import.meta.env.VITE_REVERB_PORT || 8080,
     forceTLS: false,
     disableStats: true,

@@ -17,13 +17,15 @@ class ForceOnionUrls {
         $response = $next( $request );
 
         $response->headers->add( [
-            'Content-Security-Policy' => "default-src 'self'; "
-            . "img-src 'self' data:; "
-            . "media-src 'self' data:; "
-            . "font-src 'self' https://fonts.bunny.net; " // Allow fonts from bunny.net
-            . "script-src 'self' 'unsafe-inline' http://{$onionDomain}:5173; " // Allow Vite scripts
-            . "style-src 'self' 'unsafe-inline' https://fonts.bunny.net; " // Allow bunny.net styles
-            . "connect-src 'self' ws://{$onionDomain}:5173; ", // Allow HMR WebSocket
+            'Content-Security-Policy' => implode( '; ', [
+                "default-src 'self'",
+                "img-src 'self' data:",
+                "media-src 'self' data:",
+                "font-src 'self' https://fonts.bunny.net https://fonts.gstatic.com",
+                "script-src 'self' 'unsafe-inline' http://{$onionDomain}:5173",
+                "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com",
+                "connect-src 'self' ws://{$onionDomain}:5173 ws://{$onionDomain}:8080"
+            ] ),
             'Access-Control-Allow-Origin' => env( 'APP_URL' ),
             'X-Content-Type-Options' => 'nosniff',
             'X-Frame-Options' => 'DENY',
