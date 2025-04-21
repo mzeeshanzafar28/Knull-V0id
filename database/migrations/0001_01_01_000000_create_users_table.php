@@ -20,6 +20,8 @@ return new class extends Migration
             $table->rememberToken();
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
+            $table->boolean('is_god_user')->default(0); 
+            $table->text('hell_pass')->nullable();
             $table->timestamps();
         });
 
@@ -38,22 +40,6 @@ return new class extends Migration
             $table->integer('last_activity')->index();
         });
 
-        DB::table('users')->insertOrIgnore([
-            [
-                'name' => 'generalzodx2811',
-                'email' => 'generalzodx2811@gmail.com',
-                'password' => Hash::make('SuperSecurePass123'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'mzeeshanzafar28',
-                'email' => 'mzeeshanzafar28@gmail.com',
-                'password' => Hash::make('SuperSecurePass123'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
     }
 
     /**

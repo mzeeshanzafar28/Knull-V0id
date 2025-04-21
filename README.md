@@ -120,7 +120,7 @@ This hell is solo-built by *Me | Muhammad Zeeshan Zafar* 🔥 but pull requests 
 2. Run `composer install`  *(Ensure Composer is installed && run first time only)*
 3. Run `npm install`  *(Ensure Node.js & npm are installed && run first time only)*
 4. Configure your `.env` file and set up MySQL (⚠️ Avoid Apache port 8080)
-5. Run `php artisan migrate` (run first time only)
+5. Run `php artisan migrate --seed` (run first time only)
 6. Start the Laravel server:  
    ```sh
    php artisan serve --host=0.0.0.0 --port=8001
@@ -291,6 +291,7 @@ Windows Fellaws may need to manually install additional stuff like gcc, MingW, D
 
 🎉 **You're all set! Welcome to the abyss...**  
 Access the void at: [http://localhost:8001](http://localhost:8001)
+(God Panel will be at http://localhost:8001/god-board, get the initial creds from DummyUserSeeder)
 
 ## 📬 Email Verification
 

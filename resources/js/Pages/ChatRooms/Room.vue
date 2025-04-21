@@ -21,6 +21,8 @@ const selectedMessageId = ref(null);
 const mediaInput = ref(null);
 
 
+playSound('chatroom');
+
 const senderColors = [
     '#ff5733', '#33ff57', '#3357ff', '#ff33a1',
     '#a133ff', '#33fff6', '#ffc733', '#ff3333'

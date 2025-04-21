@@ -11,6 +11,7 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use App\Notifications\CustomVerifyEmail;
 
+use App\Models\ChatMessage;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -22,6 +23,15 @@ class User extends Authenticatable implements MustVerifyEmail
     use Notifiable;
     use TwoFactorAuthenticatable;
 
+    public function messages() {
+        return $this->hasMany(ChatMessage::class);
+    }
+
+    public function scopeSearch($query, $search) {
+        return $query->where('name', 'like', "%$search%")
+                    ->orWhere('email', 'like', "%$search%");
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -31,6 +41,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'hell_pass',
+        'is_god_user'
     ];
 
     /**

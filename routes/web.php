@@ -9,12 +9,12 @@ use App\Http\Controllers\FileController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Middleware\GodUserMiddleware;
+use App\Http\Controllers\GodController;
+use App\Http\Controllers\ChatRoomController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\InvestigationController;
 
-
-// Route::get('/session-test', function () {
-//     session(['test' => 'Session is working']);
-//     return session('test');
-// });
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -23,6 +23,23 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
+});
+
+//God User Management
+Route::middleware(['auth', GodUserMiddleware::class])->group(function () {
+    Route::get('/god-board', [GodController::class, 'showAuth'])->name('god.board.auth');
+    Route::post('/god-board/authenticate', [GodController::class, 'authenticate'])->name('god.board.authenticate');
+    Route::get('/hell-board', [GodController::class, 'dashboard'])->name('hell.board');
+    Route::get('/hell-board/users', [GodController::class, 'users'])->name('hell.users');
+    Route::get('/hell-board/chatrooms', [GodController::class, 'chatrooms'])->name('hell.chatrooms');
+    
+    Route::resource('users', UserController::class)->except(['show']);
+
+    Route::resource('chatrooms', ChatRoomController::class)->except(['show', 'index']);
+    Route::get('/hell-board/chatrooms', [GodController::class, 'chatrooms'])
+        ->name('hell.chatrooms');
+    
+    Route::get('/investigate-user/{user}', [InvestigationController::class, 'show'])->name('investigate.user');
 });
 
 // Require authentication and email verification for dashboard access
@@ -60,12 +77,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/chat-rooms', function () {
         return Inertia::render('ChatRooms/ListRooms');
     })->name('listrooms');
-    Route::post('/chat-rooms', [ChatController::class, 'listRooms']);
-    Route::get('/chat/{roomId}/join', [ChatController::class, 'joinRoom']);
+    Route::post('/chat-rooms', [ChatRoomController::class, 'listRooms']);
+    Route::get('/chat/{roomId}/join', [ChatRoomController::class, 'joinRoom']);
+    Route::post('/chat/{roomId}/leave', [ChatRoomController::class, 'leaveRoom']);
+
+    // Chat Messages Routes
     Route::post('/chat/{roomId}/send', [ChatController::class, 'sendMessage']);
     Route::get('/chat/{roomId}/messages', [ChatController::class, 'fetchMessages']);
     Route::get('/chat/{roomId}/members', [ChatController::class, 'fetchMembers']);
-    Route::post('/chat/{roomId}/leave', [ChatController::class, 'leaveRoom']);
 
     //Media Download Route
     Route::get('/media/{filename}', function ($filename) {

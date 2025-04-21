@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=IM+Fell+English+SC&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Creepster&family=IM+Fell+English+SC&display=swap');
 @import 'animate.css';
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=MedievalSharp&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -154,4 +155,77 @@ body::-webkit-scrollbar {
 
 .animate-pulse-slow {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
+@keyframes flicker {
+    0% {
+        opacity: 0.9;
+    }
+
+    3% {
+        opacity: 0.8;
+    }
+
+    6% {
+        opacity: 0.85;
+    }
+
+    9% {
+        opacity: 0.75;
+    }
+
+    100% {
+        opacity: 0.9;
+    }
+}
+
+@keyframes glitch {
+    2% {
+        transform: translate(2px, 0);
+    }
+
+    4% {
+        transform: translate(-1px, 2px);
+    }
+
+    98% {
+        transform: translate(0, 0);
+    }
+}
+
+.bg-void-dark {
+    background: #0a0000;
+    background-image: radial-gradient(#200000 15%, transparent 16%),
+        radial-gradient(#200000 15%, transparent 16%);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+}
+
+.bg-blood {
+    background: #300000;
+    border: 1px solid #500000;
+    box-shadow: 0 0 15px #800000;
+}
+
+.text-blood {
+    color: #ff1a1a;
+    text-shadow: 0 0 10px #ff0000;
+}
+
+.horror-font {
+    font-family: 'Creepster', cursive;
+}
+
+.glitch-text {
+    animation: glitch 5s infinite;
+    position: relative;
+
+    &::before {
+        content: attr(data-text);
+        position: absolute;
+        left: -2px;
+        text-shadow: 2px 0 #00ffff;
+        clip: rect(0, 900px, 0, 0);
+    }
 }
