@@ -109,27 +109,23 @@ class ChatRoomController extends Controller
     {
         $room = ChatRoom::findOrFail($roomId);
         $activeUsers = cache()->get("chat_room_users_{$roomId}", []);
-
-        $userId = auth()->id();
-        $username = auth()->user()->name;
-
-        $rootUsers = ['mzeeshanzafar28','generalzodx28'];
-
-        if (isset($activeUsers[$userId])) {
+        $user = auth()->user();
+    
+        if (isset($activeUsers[$user->id])) {
             return Inertia::render('ChatRooms/Room', [
                 'roomId'  => $roomId,
                 'room'    => $room,
                 'members' => array_values($activeUsers),
             ]);
         }
-
-        if (count($activeUsers) >= $room->max_members && !in_array($username, $rootUsers)) {
+    
+        if (count($activeUsers) >= $room->max_members && !$user->is_god_user) {
             return redirect()->route('listrooms')->with('error', 'Room is full.');
         }
-
-        $activeUsers[$userId] = ['id' => $userId, 'name' => $username];
+    
+        $activeUsers[$user->id] = ['id' => $user->id, 'name' => $user->name];
         cache()->put("chat_room_users_{$roomId}", $activeUsers, now()->addMinutes(10));
-
+    
         return Inertia::render('ChatRooms/Room', [
             'roomId'  => $roomId,
             'room'    => $room,
