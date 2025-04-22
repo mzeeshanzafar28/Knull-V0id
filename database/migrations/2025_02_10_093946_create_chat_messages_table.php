@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('chat_room_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->text('encrypted_message');
-            $table->text('kyber_ciphertext');
-            $table->string('iv');
+            $table->text('encrypted_message')->nullable();
+            $table->text('kyber_ciphertext')->nullable();
+            $table->string('iv')->nullable();
             $table->string('sender');
             $table->string('media_path')->nullable();
             $table->string('media_type')->nullable();
