@@ -336,7 +336,7 @@ setInterval(() => {
                                     <span>Unsupported media type</span>
                                 </div>
                             </div>
-                            <span v-if="message.content && message.content !== 'Media shared'">
+                            <span v-if="message.content && !message.media_path && message.content !== 'Media shared'">
                                 {{ message.content }}
                             </span>
                         </div>

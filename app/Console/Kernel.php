@@ -7,56 +7,68 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Models\File;
 use App\Models\ChatRoom;
 use App\Models\ChatMessage;
+use App\Models\PrivateMessage;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 class Kernel extends ConsoleKernel
 {
-    /**
-     * Define the application's command schedule.
-     */
     protected function schedule(Schedule $schedule): void
     {
-        // Existing file cleanup
+        // File cleanup
         $schedule->call(function () {
             File::where('expires_at', '<=', now())->delete();
         })->daily();
-    
-        // Enhanced ephemeral room cleanup
+
+        // Chats media cleanup
         $schedule->call(function () {
-            $ephemeralRooms = ChatRoom::where('is_ephemeral', true)->get();
-    
-            foreach ($ephemeralRooms as $room) {
-                $threshold = Carbon::now()->subHours($room->self_destruct_hours);
-                
-                // Get messages scheduled for deletion
-                $messages = ChatMessage::where('chat_room_id', $room->id)
-                    ->where('created_at', '<', $threshold)
-                    ->get();
-    
-                // Delete associated media files
-                foreach ($messages as $message) {
-                    if ($message->media_path) {
-                        Storage::disk('public')->delete($message->media_path);
-                    }
-                }
-    
-                // Delete messages
-                ChatMessage::where('chat_room_id', $room->id)
-                    ->where('created_at', '<', $threshold)
-                    ->delete();
-            }
+            $this->cleanupChatRoomMedia();
+            $this->cleanupPrivateChatMedia();
         })->everyFiveMinutes();
     }
 
+    protected function cleanupChatRoomMedia()
+    {
+        $ephemeralRooms = ChatRoom::where('is_ephemeral', true)->get();
 
-    /**
-     * Register the commands for the application.
-     */
+        foreach ($ephemeralRooms as $room) {
+            $threshold = Carbon::now()->subHours($room->self_destruct_hours);
+            
+            $messages = ChatMessage::where('chat_room_id', $room->id)
+                ->where('created_at', '<', $threshold)
+                ->get();
+
+            foreach ($messages as $message) {
+                if ($message->media_path) {
+                    Storage::disk('public')->delete($message->media_path);
+                }
+            }
+
+            ChatMessage::where('chat_room_id', $room->id)
+                ->where('created_at', '<', $threshold)
+                ->delete();
+        }
+    }
+
+    protected function cleanupPrivateChatMedia()
+    {
+        // Cleanup private messages older than 3 days by default
+        $threshold = Carbon::now()->subDays(3);
+        
+        $messages = PrivateMessage::where('created_at', '<', $threshold)->get();
+
+        foreach ($messages as $message) {
+            if ($message->media_path) {
+                Storage::disk('public')->delete($message->media_path);
+            }
+        }
+
+        PrivateMessage::where('created_at', '<', $threshold)->delete();
+    }
+
     protected function commands(): void
     {
         $this->load(__DIR__.'/Commands');
-
         require base_path('routes/console.php');
     }
 }

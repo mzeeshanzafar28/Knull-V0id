@@ -113,7 +113,7 @@ class PrivateChatController extends Controller
                 return [
                     'id' => $msg->id,
                     'sender_name' => $msg->sender->name,
-                    'content' => '', // No text content
+                    'content' => '', 
                     'media_path' => $msg->media_path,
                     'media_type' => $msg->media_type,
                     'created_at' => $msg->created_at

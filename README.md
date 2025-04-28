@@ -393,7 +393,7 @@ Follow these steps to host **Knull-V0id** on the **Tor/Onion Network**:
 
 ## 🛡️ Reach the Hell Master
 
-- **LinkedIn:** [https://www.linkedin.com/in/m-zeeshan-zafar-9205a1248/](https://www.linkedin.com/in/m-zeeshanzafar28/)
+- **LinkedIn:** [https://www.linkedin.com/in/mzeeshanzafar28/](https://www.linkedin.com/in/m-zeeshanzafar28/)
 - **Instagram:** [https://www.instagram.com/mzeeshanzafar28/](https://www.instagram.com/mzeeshanzafar28/)
 - **Portfolio1:** [https://mzeeshanzafar28.github.io/zee_folio/](https://mzeeshanzafar28.github.io/zee_folio/)
 - **Portfolio2:** [https://mzeeshanzafar28.github.io/zeefolio/](https://mzeeshanzafar28.github.io/zeefolio/)
