@@ -37,7 +37,7 @@ class PrivateMessageSent implements ShouldBroadcast {
         return [
             'id' => $this->messageId,
             'chat_id' => $this->chatId,
-            'content' => $this->decryptedMessage ?: '', // Empty string for media-only
+            'content' => $this->decryptedMessage ?: '',
             'sender_name' => $this->senderName,
             'created_at' => now()->toISOString(),
             'media_path' => $this->mediaPath,
