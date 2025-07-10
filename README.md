@@ -2,9 +2,9 @@
 
 ---
 
-# 😈 Knull-V0id
+# 😈 Knull-V0id: The Hell for Quantum Computers
 
-### *The Hell for Quantum Computers*
+### *World's First Fully Open Source Onion Based Post Quantum Resistant Platform*
 
 ---
 

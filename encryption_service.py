@@ -31,7 +31,6 @@ def decrypt_message(kyber_ciphertext, encrypted_message, iv):
     """
     try:
         kyber_ciphertext = base64.b64decode(kyber_ciphertext)
-        # do a comparision - todo
         shared_secret = private_key.decap_secret(kyber_ciphertext)
 
         iv = base64.b64decode(iv)
