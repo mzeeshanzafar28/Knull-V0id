@@ -16,7 +16,7 @@
 - **🥷 Master Vue**  — The shadow that shapes the void.
 - **🥸 Uncle Tailwind**  — Styling the horror with finesse.
 - **😎 Donnie Reverb**  — Echoing whispers across the realm.
-- **👯 Sister Python**  — Powering the dark rituals.
+- **👯 Sista Python**  — Powering the dark rituals.
 
 ---
 
