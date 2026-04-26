@@ -1,0 +1,231 @@
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=IM+Fell+English+SC&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=IM+Fell+English+SC&display=swap');
+@import 'animate.css';
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=MedievalSharp&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Google Fonts */
+
+[x-cloak] {
+    display: none;
+}
+
+body::-webkit-scrollbar {
+    display: none;
+}
+
+.smoke-effect {
+    background: linear-gradient(45deg,
+            rgba(255, 68, 68, 0) 0%,
+            rgba(255, 68, 68, 0.1) 50%,
+            rgba(255, 68, 68, 0) 100%);
+    animation: smoke 6s infinite linear;
+}
+
+@keyframes smoke {
+    0% {
+        opacity: 0.3;
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: translateY(-20px) rotate(180deg);
+    }
+
+    100% {
+        opacity: 0.3;
+        transform: translateY(0) rotate(360deg);
+    }
+}
+
+.shadow-zod-glow {
+    box-shadow: 0 0 50px rgba(255, 68, 68, 0.3);
+}
+
+.shadow-zod-glow-intense {
+    box-shadow: 0 0 75px rgba(255, 68, 68, 0.5);
+}
+
+.shadow-zod-button-glow {
+    box-shadow: 0 0 25px rgba(255, 68, 68, 0.4);
+}
+
+.shadow-zod-button-glow-intense {
+    box-shadow: 0 0 40px rgba(255, 68, 68, 0.6);
+}
+
+.zodiac-chamber {
+    border-width: 3px;
+    border-image: linear-gradient(45deg,
+            #ff4444,
+            #4a0000,
+            #ff4444) 1;
+    animation: border-glow 3s infinite;
+}
+
+@keyframes border-glow {
+    0% {
+        border-color: #ff4444;
+    }
+
+    50% {
+        border-color: #4a0000;
+    }
+
+    100% {
+        border-color: #ff4444;
+    }
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(180deg);
+    }
+
+    100% {
+        transform: translateY(0) rotate(360deg);
+    }
+}
+
+@keyframes glitch {
+    0% {
+        text-shadow: 2px 2px #ff4444, -2px -2px #00ff00;
+    }
+
+    25% {
+        text-shadow: -2px 2px #4444ff, 2px -2px #ff4444;
+    }
+
+    50% {
+        text-shadow: 2px -2px #00ff00, -2px 2px #4444ff;
+    }
+
+    75% {
+        text-shadow: -2px -2px #ff4444, 2px 2px #00ff00;
+    }
+
+    100% {
+        text-shadow: 2px 2px #4444ff, -2px -2px #ff4444;
+    }
+}
+
+.animate-float {
+    animation: float 10s infinite ease-in-out;
+}
+
+.animate-glitch {
+    animation: glitch 1s infinite;
+}
+
+.shadow-void {
+    box-shadow: 0 0 30px rgba(255, 68, 68, 0.1);
+}
+
+.hover\:shadow-void-glow:hover {
+    box-shadow: 0 0 25px rgba(255, 68, 68, 0.4);
+}
+
+.bg-void-black {
+    background-color: #0a0a0a;
+}
+
+.text-blood-red {
+    color: #ff4444;
+}
+
+.text-ghost-white {
+    color: #f0f0f0;
+}
+
+.font-creepster {
+    font-family: 'Creepster', cursive;
+}
+
+.font-im-fell {
+    font-family: 'IM Fell English SC', serif;
+}
+
+.animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
+@keyframes flicker {
+    0% {
+        opacity: 0.9;
+    }
+
+    3% {
+        opacity: 0.8;
+    }
+
+    6% {
+        opacity: 0.85;
+    }
+
+    9% {
+        opacity: 0.75;
+    }
+
+    100% {
+        opacity: 0.9;
+    }
+}
+
+@keyframes glitch {
+    2% {
+        transform: translate(2px, 0);
+    }
+
+    4% {
+        transform: translate(-1px, 2px);
+    }
+
+    98% {
+        transform: translate(0, 0);
+    }
+}
+
+.bg-void-dark {
+    background: #0a0000;
+    background-image: radial-gradient(#200000 15%, transparent 16%),
+        radial-gradient(#200000 15%, transparent 16%);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+}
+
+.bg-blood {
+    background: #300000;
+    border: 1px solid #500000;
+    box-shadow: 0 0 15px #800000;
+}
+
+.text-blood {
+    color: #ff1a1a;
+    text-shadow: 0 0 10px #ff0000;
+}
+
+.horror-font {
+    font-family: 'Creepster', cursive;
+}
+
+.glitch-text {
+    animation: glitch 5s infinite;
+    position: relative;
+
+    &::before {
+        content: attr(data-text);
+        position: absolute;
+        left: -2px;
+        text-shadow: 2px 0 #00ffff;
+        clip: rect(0, 900px, 0, 0);
+    }
+}
